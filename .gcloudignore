@@ -1,0 +1,7 @@
+.gcloudignore
+.git
+.gitignore
+
+# Explicitly include cached Garmin authentication tokens
+!.garmin_tokens
+!.garmin_tokens/**

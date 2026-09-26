@@ -1,0 +1,25 @@
+# Security & Credentials
+.env
+*.env
+.garmin_tokens/
+.garmin_tokens/**
+*.pem
+*-key.json
+credentials*.json
+
+# Python Caches & Environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# Node & Frontend Build
+**/node_modules/
+node_modules/
+dist/
+build/
+.DS_Store
+Thumbs.db

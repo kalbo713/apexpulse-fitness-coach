@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ApexPulse · AI Fitness & Fasting Coach</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
+
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --bg-surface: #101626;
+      --bg-surface-elevated: #161f36;
+      --card-bg: rgba(22, 31, 54, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover-border: rgba(255, 87, 34, 0.4);
+      
+      --accent-orange: #FF5722;
+      --accent-orange-light: #FF8A65;
+      --accent-cyan: #00E5FF;
+      --accent-green: #00E676;
+      --accent-purple: #7C4DFF;
+      
+      --text-primary: #F3F4F6;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+      
+      --gradient-orange: linear-gradient(135deg, #FF5722 0%, #FF9100 100%);
+      --gradient-cyan: linear-gradient(135deg, #00E5FF 0%, #00B0FF 100%);
+      --gradient-dark: linear-gradient(180deg, rgba(16, 22, 38, 0.95) 0%, rgba(9, 13, 22, 0.98) 100%);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(255, 87, 34, 0.07) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(0, 229, 255, 0.05) 0%, transparent 40%);
+      color: var(--text-primary);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* --- App Header --- */
+    header {
+      background: var(--gradient-dark);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 0.85rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 20;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--gradient-orange);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 14px rgba(255, 87, 34, 0.35);
+    }
+
+    .brand-logo span {
+      font-size: 24px;
+    }
+
+    .brand-text h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .brand-badge {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 0.15rem 0.45rem;
+      background: rgba(0, 230, 118, 0.15);
+      color: var(--accent-green);
+      border: 1px solid rgba(0, 230, 118, 0.3);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background-color: var(--accent-green);
+      border-radius: 50%;
+      animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .header-stats {
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .stat-pill {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--card-border);
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .stat-pill strong {
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* --- Chat Container --- */
+    #chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      scroll-behavior: smooth;
+    }
+
+    /* --- Welcome Banner --- */
+    .welcome-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 0.5rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .welcome-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .welcome-header h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .welcome-card p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.6rem;
+    }
+
+    .quick-btn {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 0.65rem 0.85rem;
+      color: var(--text-primary);
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .quick-btn:hover {
+      border-color: var(--card-hover-border);
+      background: rgba(255, 87, 34, 0.1);
+      transform: translateY(-1px);
+    }
+
+    /* --- Messages --- */
+    .msg-row {
+      display: flex;
+      gap: 0.75rem;
+      max-width: 88%;
+      animation: fadeInMsg 0.25s ease-out;
+    }
+
+    @keyframes fadeInMsg {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg-row.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .msg-row.agent {
+      align-self: flex-start;
+      width: 100%;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 16px;
+    }
+
+    .avatar.user-avatar {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--card-border);
+      color: var(--accent-cyan);
+    }
+
+    .avatar.agent-avatar {
+      background: var(--gradient-orange);
+      color: white;
+    }
+
+    .bubble-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .bubble {
+      padding: 0.85rem 1.15rem;
+      border-radius: 14px;
+      font-size: 0.92rem;
+      line-height: 1.55;
+      word-break: break-word;
+    }
+
+    .msg-row.user .bubble {
+      background: var(--gradient-orange);
+      color: #fff;
+      font-weight: 500;
+      border-bottom-right-radius: 4px;
+      box-shadow: 0 4px 12px rgba(255, 87, 34, 0.25);
+    }
+
+    .msg-row.agent .bubble {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    /* --- Message Action Buttons (Copy, Edit, Stop) --- */
+    .msg-actions {
+      display: flex;
+      gap: 0.4rem;
+      margin-top: 0.35rem;
+      align-items: center;
+    }
+
+    .msg-row.user .msg-actions {
+      justify-content: flex-end;
+    }
+
+    .msg-row.agent .msg-actions {
+      justify-content: flex-start;
+    }
+
+    .action-btn {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 0.25rem 0.55rem;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+
+    .action-btn .material-symbols-outlined {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .action-btn:hover {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .action-btn:hover .material-symbols-outlined {
+      color: #fff;
+    }
+
+    .action-btn.stop-btn {
+      color: #ff8a80;
+      border-color: rgba(255, 82, 82, 0.3);
+    }
+
+    .action-btn.stop-btn .material-symbols-outlined {
+      color: #ff8a80;
+    }
+
+    .action-btn.stop-btn:hover {
+      color: #ff5252;
+      border-color: #ff5252;
+      background: rgba(255, 82, 82, 0.15);
+    }
+
+    .action-btn.stop-btn:hover .material-symbols-outlined {
+      color: #ff5252;
+    }
+
+    .action-btn.copied {
+      color: var(--accent-green) !important;
+      border-color: var(--accent-green) !important;
+    }
+
+    .action-btn.copied .material-symbols-outlined {
+      color: var(--accent-green) !important;
+    }
+
+    /* Rich markdown formatting inside agent bubbles */
+    .bubble h1, .bubble h2, .bubble h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.08rem;
+      color: #fff;
+      margin: 0.6rem 0 0.35rem 0;
+    }
+    .bubble h4 {
+      font-size: 0.95rem;
+      color: var(--accent-orange-light);
+      margin: 0.5rem 0 0.25rem 0;
+    }
+    .bubble p {
+      margin-bottom: 0.5rem;
+    }
+    .bubble p:last-child {
+      margin-bottom: 0;
+    }
+    .bubble ul {
+      margin: 0.4rem 0 0.6rem 1.2rem;
+    }
+    .bubble li {
+      margin-bottom: 0.25rem;
+    }
+    .bubble strong {
+      color: #fff;
+      font-weight: 600;
+    }
+    .bubble code {
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      font-size: 0.85em;
+      color: var(--accent-cyan);
+    }
+
+    /* --- Hyperlinks & Stylized Video Tutorial Cards --- */
+    .bubble a.chat-link {
+      color: var(--accent-orange-light);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-thickness: 1.5px;
+      font-weight: 600;
+      transition: all 0.15s ease;
+      word-break: break-all;
+    }
+
+    .bubble a.chat-link:hover {
+      color: #fff;
+      text-decoration-color: var(--accent-orange);
+      text-shadow: 0 0 8px rgba(255, 87, 34, 0.4);
+    }
+
+    .yt-video-card {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      background: linear-gradient(135deg, rgba(255, 87, 34, 0.12) 0%, rgba(22, 31, 54, 0.85) 100%);
+      border: 1px solid rgba(255, 87, 34, 0.35);
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      margin: 0.6rem 0;
+      text-decoration: none;
+      color: #fff;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+
+    .yt-video-card:hover {
+      background: linear-gradient(135deg, rgba(255, 87, 34, 0.22) 0%, rgba(30, 41, 69, 0.95) 100%);
+      border-color: var(--accent-orange);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 87, 34, 0.4);
+      color: #fff;
+    }
+
+    .yt-video-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--gradient-orange);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 3px 10px rgba(255, 87, 34, 0.4);
+    }
+
+    .yt-video-icon .material-symbols-outlined {
+      color: #fff;
+      font-size: 24px;
+    }
+
+    .yt-video-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .yt-video-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .yt-video-sub {
+      font-size: 0.75rem;
+      color: var(--accent-orange-light);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .yt-video-sub span.yt-badge {
+      background: rgba(255, 87, 34, 0.2);
+      border: 1px solid rgba(255, 87, 34, 0.35);
+      border-radius: 4px;
+      padding: 0.1rem 0.35rem;
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--accent-orange-light);
+    }
+
+    /* --- A2UI Visual Component Cards --- */
+    .a2card {
+      background: linear-gradient(145deg, rgba(22, 31, 54, 0.95) 0%, rgba(13, 19, 34, 0.98) 100%);
+      border: 1px solid rgba(255, 87, 34, 0.3);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      margin-top: 0.5rem;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .a2card + .a2card {
+      margin-top: 0.75rem;
+    }
+
+    .a2col {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .a2row {
+      display: flex;
+      flex-direction: row;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .a2row.between {
+      justify-content: space-between;
+    }
+    
+    .a2text.a2-h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+    
+    .a2text.a2-h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+    
+    .a2text.a2-h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--accent-orange-light);
+    }
+
+    .a2text.a2-h4 {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 0.25rem;
+    }
+
+    .a2text.a2-body {
+      font-size: 0.92rem;
+      color: #E2E8F0;
+      line-height: 1.5;
+    }
+
+    .a2text.a2-caption {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    .a2divider {
+      border: none;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      margin: 0.5rem 0;
+      width: 100%;
+    }
+
+    .a2img {
+      max-width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+    }
+
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-size: 1.4rem;
+      line-height: 1;
+      vertical-align: middle;
+      color: var(--accent-orange);
+    }
+
+    /* --- Typing Indicator --- */
+    .typing-dots {
+      display: flex;
+      gap: 4px;
+      padding: 0.5rem 0.25rem;
+    }
+    .typing-dots span {
+      width: 6px;
+      height: 6px;
+      background-color: var(--accent-orange);
+      border-radius: 50%;
+      animation: typingBounce 1.4s infinite ease-in-out both;
+    }
+    .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes typingBounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+
+    /* --- Input Form Bar --- */
+    .input-section {
+      background: var(--gradient-dark);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--card-border);
+      padding: 1rem 1.5rem;
+      z-index: 20;
+    }
+
+    .input-container {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .quick-chips-row {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.25rem;
+      scrollbar-width: none;
+    }
+    .quick-chips-row::-webkit-scrollbar { display: none; }
+
+    .chip {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 0.3rem 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .chip:hover {
+      color: #fff;
+      border-color: var(--accent-orange);
+      background: rgba(255, 87, 34, 0.12);
+    }
+
+    form#chat-form {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    input#user-input {
+      width: 100%;
+      background: var(--bg-surface);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 0.85rem 1.15rem;
+      font-size: 0.95rem;
+      color: #fff;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    input#user-input:focus {
+      border-color: var(--accent-orange);
+      box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.15);
+      background: var(--bg-surface-elevated);
+    }
+
+    input#user-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    button#send-btn {
+      background: var(--gradient-orange);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 0.85rem 1.4rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      box-shadow: 0 4px 14px rgba(255, 87, 34, 0.3);
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    button#send-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(255, 87, 34, 0.4);
+    }
+
+    button#send-btn:active {
+      transform: translateY(1px);
+    }
+
+    button#send-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    @media (max-width: 640px) {
+      header { padding: 0.75rem 1rem; }
+      .header-stats { display: none; }
+      #chat-container { padding: 1rem; }
+      .msg-row { max-width: 95%; }
+      .input-section { padding: 0.75rem 1rem; }
+    }
+
+    /* --- Dedicated Workout Modal Styles --- */
+    .workout-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(4, 7, 13, 0.78);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+
+    .workout-modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .workout-modal-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--card-border);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 87, 34, 0.25);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 1.6rem;
+      color: var(--text-primary);
+      transform: scale(0.94) translateY(10px);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .workout-modal-overlay.active .workout-modal-container {
+      transform: scale(1) translateY(0);
+    }
+
+    .workout-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .workout-modal-title {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .workout-modal-title h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .workout-modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .workout-modal-close:hover {
+      color: #fff;
+      background: var(--bg-surface-elevated);
+    }
+
+    .workout-form-group {
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .workout-form-group label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+    }
+
+    .workout-form-control {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 0.7rem 0.9rem;
+      color: #fff;
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .workout-form-control:focus {
+      border-color: var(--accent-orange);
+      box-shadow: 0 0 0 2px rgba(255, 87, 34, 0.2);
+    }
+
+    .workout-toggle-container {
+      background: rgba(255, 87, 34, 0.08);
+      border: 1px solid rgba(255, 87, 34, 0.2);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.1rem;
+    }
+
+    .workout-toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: #fff;
+    }
+
+    .workout-toggle-label input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent-orange);
+      cursor: pointer;
+    }
+
+    .workout-grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.9rem;
+    }
+
+    .workout-range-slider {
+      width: 100%;
+      accent-color: var(--accent-orange);
+      cursor: pointer;
+      height: 6px;
+      background: var(--bg-surface-elevated);
+      border-radius: 4px;
+      margin-top: 0.35rem;
+    }
+
+    .workout-modal-actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: flex-end;
+      margin-top: 1.4rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .workout-btn-cancel {
+      background: transparent;
+      border: 1px solid var(--card-border);
+      color: var(--text-secondary);
+      border-radius: 10px;
+      padding: 0.65rem 1.2rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .workout-btn-cancel:hover {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.25);
+      background: var(--bg-surface-elevated);
+    }
+
+    .workout-btn-submit {
+      background: var(--gradient-orange);
+      border: none;
+      color: #fff;
+      border-radius: 10px;
+      padding: 0.65rem 1.4rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: 'Outfit', sans-serif;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(255, 87, 34, 0.35);
+      transition: all 0.2s ease;
+    }
+
+    .workout-btn-submit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(255, 87, 34, 0.45);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="brand-section">
+      <div class="brand-logo">
+        <span class="material-symbols-outlined">bolt</span>
+      </div>
+      <div class="brand-text">
+        <h1>ApexPulse <span class="brand-badge"><span class="status-dot"></span> Live Coach</span></h1>
+      </div>
+    </div>
+
+    <div class="header-stats">
+      <div class="stat-pill">
+        <span class="material-symbols-outlined" style="color:var(--accent-orange); font-size:16px;">schedule</span>
+        Fasting: <strong>16/8 Protocol</strong>
+      </div>
+      <div class="stat-pill">
+        <span class="material-symbols-outlined" style="color:var(--accent-cyan); font-size:16px;">egg_alt</span>
+        Target: <strong>1.0g/lb Protein</strong>
+      </div>
+      <div class="stat-pill">
+        <span class="material-symbols-outlined" style="color:var(--accent-green); font-size:16px;">directions_walk</span>
+        Steps: <strong>10,000 / Day</strong>
+      </div>
+      <div class="stat-pill">
+        <span class="material-symbols-outlined" style="color:var(--accent-purple); font-size:16px;">fitness_center</span>
+        Split: <strong>Strength + Cycling</strong>
+      </div>
+    </div>
+  </header>
+
+  <!-- Chat Log -->
+  <div id="chat-container">
+    <!-- Welcome Card -->
+    <div class="welcome-card">
+      <div class="welcome-header">
+        <span class="material-symbols-outlined" style="color:var(--accent-orange); font-size:28px;">sports_gymnastics</span>
+        <h2>Welcome to ApexPulse Coach</h2>
+      </div>
+      <p>I track your functional strength training, indoor cycling, walking step aggregates (daily, weekly, yearly), 16/8 fasting schedule, and high-protein nutrition with visual A2UI cards.</p>
+      
+      <div class="quick-grid">
+        <div class="quick-btn" onclick="sendPrompt('Show my daily, weekly, and yearly step tracking summary card via A2UI.')">
+          <span>🚶</span> Step Analytics Card
+        </div>
+        <div class="quick-btn" onclick="populateLogSteps()">
+          <span>👟</span> Log Steps
+        </div>
+        <div class="quick-btn" onclick="sendPrompt('Check my fasting window and protein goals based on my current profile.')">
+          <span>🥩</span> Protein & Fasting Check
+        </div>
+        <div class="quick-btn" onclick="openWorkoutModal()">
+          <span>🏋️‍♂️</span> Log Strength Workout
+        </div>
+        <div class="quick-btn" onclick="openCyclingModal()">
+          <span>🚴</span> Log Cycling Ride
+        </div>
+        <div class="quick-btn" onclick="sendPrompt('Show me a summary of all workouts logged today and check my fasting window.')">
+          <span>📊</span> Today's Workout Summary
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input Form -->
+  <div class="input-section">
+    <div class="input-container">
+      <div class="quick-chips-row">
+        <div class="chip" onclick="sendPrompt('Show my step summary card via A2UI.')">🚶 Step Card</div>
+        <div class="chip" onclick="populateLogSteps()">👟 Log Steps</div>
+        <div class="chip" onclick="sendPrompt('What is my current fasting status?')">⏱️ Fasting Timer</div>
+        <div class="chip" onclick="sendPrompt('Calculate my protein target for 200 lbs across meals in my 8-hour window.')">🍗 Protein Breakdown</div>
+        <div class="chip" onclick="sendPrompt('Suggest a high-protein post-workout meal to hit 60g protein.')">🥗 Post-Workout Meal</div>
+      </div>
+
+      <form id="chat-form">
+        <div class="input-wrapper">
+          <input 
+            type="text" 
+            id="user-input" 
+            placeholder="Ask your coach, log a workout, or check your fasting window…" 
+            autocomplete="off" 
+            autofocus
+          />
+        </div>
+        <button type="submit" id="send-btn">
+          <span>Send</span>
+          <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const chatContainer = document.getElementById("chat-container");
+    const chatForm = document.getElementById("chat-form");
+    const userInput = document.getElementById("user-input");
+    const sendBtn = document.getElementById("send-btn");
+
+    /* --- Quick Action Helper: Populate Log Steps --- */
+    function populateLogSteps() {
+      if (userInput) {
+        userInput.value = "Log my steps: [Enter Number]";
+        userInput.focus();
+        const placeholder = "[Enter Number]";
+        const startPos = userInput.value.indexOf(placeholder);
+        if (startPos !== -1) {
+          userInput.setSelectionRange(startPos, startPos + placeholder.length);
+        }
+      }
+    }
+
+    /* --- Cycling Modal Functions --- */
+    function openCyclingModal() {
+      const modal = document.getElementById("cycling-modal");
+      if (modal) {
+        modal.classList.add("active");
+        const durationInput = document.getElementById("modal-cycling-duration");
+        if (durationInput) durationInput.focus();
+      }
+    }
+
+    function closeCyclingModal(event) {
+      if (event && event.target && event.target !== event.currentTarget && 
+          !event.target.classList.contains("workout-modal-close") && 
+          !event.target.classList.contains("workout-btn-cancel")) {
+        return;
+      }
+      const modal = document.getElementById("cycling-modal");
+      if (modal) {
+        modal.classList.remove("active");
+      }
+    }
+
+    function submitCyclingModal(e) {
+      e.preventDefault();
+      const duration = document.getElementById("modal-cycling-duration").value || "45";
+      const zone = document.getElementById("modal-cycling-zone").value || "Zone 2 (Aerobic Base)";
+      const watts = document.getElementById("modal-cycling-watts").value || "175";
+      const rpm = document.getElementById("modal-cycling-rpm").value || "88";
+
+      const formattedMessage = `Logged Cycling Ride: ${duration} mins | ${zone} | Avg Power: ${watts} W | Cadence: ${rpm} RPM`;
+
+      closeCyclingModal();
+      sendPrompt(formattedMessage);
+    }
+
+    /* --- Workout Modal Functions --- */
+    function openWorkoutModal() {
+      const modal = document.getElementById("workout-modal");
+      if (modal) {
+        modal.classList.add("active");
+        document.getElementById("modal-exercise-select").focus();
+      }
+    }
+
+    function closeWorkoutModal(event) {
+      if (event && event.target && event.target !== event.currentTarget && 
+          !event.target.classList.contains("workout-modal-close") && 
+          !event.target.classList.contains("workout-btn-cancel")) {
+        return;
+      }
+      const modal = document.getElementById("workout-modal");
+      if (modal) {
+        modal.classList.remove("active");
+      }
+    }
+
+    function handleExerciseSelectChange() {
+      const select = document.getElementById("modal-exercise-select");
+      const customGroup = document.getElementById("modal-custom-group");
+      if (select.value === "Custom Entry") {
+        customGroup.style.display = "flex";
+        document.getElementById("modal-custom-exercise").focus();
+      } else {
+        customGroup.style.display = "none";
+      }
+    }
+
+    function handleCompletionToggleChange() {
+      const toggle = document.getElementById("modal-completed-toggle");
+      const targetSets = document.getElementById("modal-target-sets");
+      const actualSets = document.getElementById("modal-actual-sets");
+      const targetReps = document.getElementById("modal-target-reps");
+      const actualReps = document.getElementById("modal-actual-reps");
+      if (toggle.checked) {
+        actualSets.value = targetSets.value;
+        actualReps.value = targetReps.value;
+      }
+    }
+
+    function handleTargetSetsChange() {
+      const toggle = document.getElementById("modal-completed-toggle");
+      if (toggle.checked) {
+        document.getElementById("modal-actual-sets").value = document.getElementById("modal-target-sets").value;
+      }
+    }
+
+    function handleTargetRepsChange() {
+      const toggle = document.getElementById("modal-completed-toggle");
+      if (toggle.checked) {
+        document.getElementById("modal-actual-reps").value = document.getElementById("modal-target-reps").value;
+      }
+    }
+
+    function submitWorkoutModal(e) {
+      e.preventDefault();
+      const select = document.getElementById("modal-exercise-select");
+      const customInput = document.getElementById("modal-custom-exercise");
+      const toggle = document.getElementById("modal-completed-toggle");
+      const targetSets = document.getElementById("modal-target-sets").value || "4";
+      const actualSets = document.getElementById("modal-actual-sets").value || "4";
+      const targetReps = document.getElementById("modal-target-reps").value || "10";
+      const actualReps = document.getElementById("modal-actual-reps").value || "10";
+      const duration = document.getElementById("modal-duration").value || "25";
+      const rpe = document.getElementById("modal-rpe").value || "8";
+
+      const exerciseName = (select.value === "Custom Entry" && customInput.value.trim()) 
+        ? customInput.value.trim() 
+        : select.value;
+
+      const completed = (toggle.checked && (parseInt(actualSets) >= parseInt(targetSets) && parseInt(actualReps) >= parseInt(targetReps))) 
+        ? "Yes" 
+        : "Partial";
+
+      const formattedMessage = `Logged Workout: ${exerciseName} | Weight: 15 lbs | Completed: ${completed} | Sets: ${actualSets}/${targetSets} | Reps: ${actualReps}/${targetReps} | Duration: ${duration} mins | RPE: ${rpe}`;
+
+      closeWorkoutModal();
+      sendPrompt(formattedMessage);
+    }
+
+    function el(tag, cls, text) {
+      const e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (text != null) e.textContent = text;
+      return e;
+    }
+
+    function isYouTubeUrl(url) {
+      return /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/i.test(url);
+    }
+
+    function createVideoCardHtml(title, url) {
+      const cleanTitle = (title || "Exercise Video Tutorial").trim();
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="yt-video-card">
+        <div class="yt-video-icon">
+          <span class="material-symbols-outlined">play_circle</span>
+        </div>
+        <div class="yt-video-content">
+          <div class="yt-video-title">${cleanTitle}</div>
+          <div class="yt-video-sub">
+            <span class="yt-badge">YouTube</span>
+            <span>Watch Form & Technique Tutorial ↗</span>
+          </div>
+        </div>
+      </a>`;
+    }
+
+    function formatMarkdown(text) {
+      if (!text) return "";
+      let html = text;
+
+      // 1. Process Markdown links: [Text](URL)
+      html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/gi, (match, linkText, url) => {
+        if (isYouTubeUrl(url)) {
+          return createVideoCardHtml(linkText, url);
+        }
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link">${linkText}</a>`;
+      });
+
+      // 2. Process bare URLs not already enclosed in href or tags
+      html = html.replace(/(^|[\s(])(https?:\/\/[^\s<"'\)]+)(?=[)\s]|$)/gi, (match, prefix, url) => {
+        if (isYouTubeUrl(url)) {
+          return `${prefix}${createVideoCardHtml("Exercise Video Tutorial", url)}`;
+        }
+        return `${prefix}<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link">${url}</a>`;
+      });
+
+      // 3. Process headings, bold, code, lists, and line breaks
+      html = html
+        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/^\* (.*$)/gim, '<li>$1</li>')
+        .replace(/^- (.*$)/gim, '<li>$1</li>');
+
+      html = html.replace(/(<li>.*?<\/li>)+/gs, (match) => `<ul>${match}</ul>`);
+      html = html.replace(/\n\n+/g, '</p><p>');
+      return `<p>${html}</p>`;
+    }
+
+    let currentAbortController = null;
+
+    function copyToClipboard(text, btn) {
+      if (!text) return;
+      const onSuccess = () => {
+        if (!btn) return;
+        const origHTML = btn.innerHTML;
+        btn.classList.add("copied");
+        btn.innerHTML = '<span class="material-symbols-outlined">check</span><span>Copied!</span>';
+        setTimeout(() => {
+          btn.classList.remove("copied");
+          btn.innerHTML = origHTML;
+        }, 1500);
+      };
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(onSuccess).catch(() => {
+          fallbackCopyText(text, onSuccess);
+        });
+      } else {
+        fallbackCopyText(text, onSuccess);
+      }
+    }
+
+    function fallbackCopyText(text, callback) {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand("copy");
+        if (callback) callback();
+      } catch (e) {}
+      document.body.removeChild(textarea);
+    }
+
+    function createMsgRow(sender, text) {
+      const row = el("div", `msg-row ${sender}`);
+      const avatar = el("div", `avatar ${sender}-avatar`);
+      avatar.innerHTML = sender === "user" 
+        ? '<span class="material-symbols-outlined" style="font-size:18px;">person</span>' 
+        : '<span class="material-symbols-outlined" style="font-size:18px;">bolt</span>';
+      
+      const bubbleWrapper = el("div", "bubble-wrapper");
+      row.appendChild(avatar);
+      row.appendChild(bubbleWrapper);
+
+      if (sender === "user" && text) {
+        const userBubble = el("div", "bubble", text);
+        bubbleWrapper.appendChild(userBubble);
+
+        // User message actions: Copy, Edit, Stop
+        const actions = el("div", "msg-actions");
+
+        // Copy button
+        const copyBtn = el("button", "action-btn");
+        copyBtn.type = "button";
+        copyBtn.innerHTML = '<span class="material-symbols-outlined">content_copy</span><span>Copy</span>';
+        copyBtn.onclick = () => copyToClipboard(text, copyBtn);
+        actions.appendChild(copyBtn);
+
+        // Edit button
+        const editBtn = el("button", "action-btn");
+        editBtn.type = "button";
+        editBtn.innerHTML = '<span class="material-symbols-outlined">edit</span><span>Edit</span>';
+        editBtn.onclick = () => {
+          userInput.value = text;
+          userInput.focus();
+          userInput.scrollIntoView({ behavior: "smooth", block: "center" });
+        };
+        actions.appendChild(editBtn);
+
+        // Stop button
+        const stopBtn = el("button", "action-btn stop-btn");
+        stopBtn.type = "button";
+        stopBtn.innerHTML = '<span class="material-symbols-outlined">stop_circle</span><span>Stop</span>';
+        stopBtn.onclick = () => {
+          if (currentAbortController) {
+            currentAbortController.abort();
+            currentAbortController = null;
+          }
+        };
+        actions.appendChild(stopBtn);
+
+        bubbleWrapper.appendChild(actions);
+      }
+
+      chatContainer.appendChild(row);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+      return bubbleWrapper;
+    }
+
+    /* --- A2UI Component Renderer --- */
+    function boundStr(v) {
+      if (v == null) return "";
+      if (typeof v === "string") return v;
+      if (typeof v.literalString === "string") return v.literalString;
+      if (typeof v.text === "string") return v.text;
+      if (typeof v.value === "string") return v.value;
+      return String(v);
+    }
+
+    function childIds(props) {
+      const ids = [];
+      if (props && typeof props.child === "string") ids.push(props.child);
+      const ch = props && props.children;
+      if (ch && Array.isArray(ch.explicitList)) {
+        for (const c of ch.explicitList) if (typeof c === "string") ids.push(c);
+      }
+      return ids;
+    }
+
+    function iconName(n) {
+      return String(n || "").replace(/([a-z0-9])([A-Z])/g, "$1_$2").replace(/\s+/g, "_").toLowerCase();
+    }
+
+    function buildNode(id, comps, seen) {
+      if (!id || seen.has(id)) return null;
+      seen.add(id);
+      const spec = comps[id];
+      if (!spec || typeof spec !== "object") return null;
+      const type = Object.keys(spec)[0];
+      const props = spec[type] || {};
+      const kids = () => childIds(props).map(cid => buildNode(cid, comps, seen)).filter(Boolean);
+
+      switch (type) {
+        case "Card": {
+          const d = el("div", "a2card");
+          kids().forEach(n => d.appendChild(n));
+          return d;
+        }
+        case "Column":
+        case "List": {
+          const horizontal = type === "List" && props.direction === "horizontal";
+          const d = el("div", horizontal ? "a2row" : "a2col");
+          kids().forEach(n => d.appendChild(n));
+          return d;
+        }
+        case "Row": {
+          const d = el("div", "a2row" + (props.distribution === "spaceBetween" ? " between" : ""));
+          kids().forEach(n => d.appendChild(n));
+          return d;
+        }
+        case "Text": {
+          const t = el("div", "a2text");
+          const hint = String(props.usageHint || "body").toLowerCase();
+          if (["h1", "h2", "h3", "h4", "h5", "h6"].includes(hint)) {
+            t.classList.add("a2-" + hint);
+          } else if (hint === "caption") {
+            t.classList.add("a2-caption");
+          } else {
+            t.classList.add("a2-body");
+          }
+          t.textContent = boundStr(props.text);
+          return t;
+        }
+        case "Divider":
+          return el("hr", "a2divider");
+        case "Image": {
+          const src = boundStr(props.url || props.src);
+          if (!/^https?:\/\//i.test(src)) return null;
+          const img = el("img", "a2img");
+          img.src = src;
+          img.alt = boundStr(props.alt) || "";
+          return img;
+        }
+        case "Icon": {
+          const s = el("span", "material-symbols-outlined");
+          s.textContent = iconName(boundStr(props.name) || props.name);
+          return s;
+        }
+        default:
+          return null;
+      }
+    }
+
+    function extractA2UIFromObj(obj) {
+      if (typeof obj === "string") {
+        const trimmed = obj.trim();
+        if ((trimmed.startsWith("{") && trimmed.endsWith("}")) || (trimmed.startsWith("[") && trimmed.endsWith("]"))) {
+          try {
+            const parsed = JSON.parse(trimmed);
+            return extractA2UIFromObj(parsed);
+          } catch (e) {}
+        }
+        return [];
+      }
+      if (Array.isArray(obj)) {
+        const items = [];
+        for (const item of obj) {
+          if (item && typeof item === "object" && (item.beginRendering || item.surfaceUpdate || item.dataModelUpdate || item.deleteSurface)) {
+            items.push(item);
+          } else {
+            items.push(...extractA2UIFromObj(item));
+          }
+        }
+        return items;
+      }
+      if (obj && typeof obj === "object") {
+        for (const key of ["display_step_summary_card_response", "a2ui_card_json", "a2ui_payload", "a2ui_card", "result", "data", "response"]) {
+          if (key in obj) {
+            const res = extractA2UIFromObj(obj[key]);
+            if (res.length) return res;
+          }
+        }
+        if (obj.beginRendering || obj.surfaceUpdate || obj.dataModelUpdate || obj.deleteSurface) {
+          return [obj];
+        }
+      }
+      return [];
+    }
+
+    function renderSurface(messages, container) {
+      const flat = extractA2UIFromObj(messages);
+      const comps = {};
+      const roots = [];
+      for (const m of flat) {
+        if (m.beginRendering && typeof m.beginRendering.root === "string") {
+          roots.push(m.beginRendering.root);
+        }
+        const su = m.surfaceUpdate;
+        if (su && Array.isArray(su.components)) {
+          for (const c of su.components) {
+            if (c && c.id && c.component) comps[c.id] = c.component;
+          }
+        }
+      }
+      let rootIds = roots.filter(r => comps[r]);
+      if (rootIds.length === 0) {
+        const referenced = new Set();
+        for (const id in comps) {
+          const spec = comps[id];
+          childIds(spec[Object.keys(spec)[0]] || {}).forEach(c => referenced.add(c));
+        }
+        rootIds = Object.keys(comps).filter(id => !referenced.has(id));
+      }
+      let drew = false;
+      for (const rid of rootIds) {
+        const node = buildNode(rid, comps, new Set());
+        if (node) {
+          container.appendChild(node);
+          drew = true;
+        }
+      }
+      return drew;
+    }
+
+    function extractA2UIFromText(text) {
+      if (!text) return { cleanText: "", a2uiMessages: [] };
+      if (!text.includes("beginRendering") && !text.includes("surfaceUpdate") && !text.includes("display_step_summary_card_response")) {
+        return { cleanText: text, a2uiMessages: [] };
+      }
+
+      let a2uiMessages = [];
+      let cleanText = text;
+
+      // 1. Extract markdown ```...``` blocks containing JSON
+      const fenceRegex = /```(?:json)?\s*([\s\S]*?)\s*```/gi;
+      let match;
+      while ((match = fenceRegex.exec(text)) !== null) {
+        const items = extractA2UIFromObj(match[1]);
+        if (items.length) {
+          a2uiMessages.push(...items);
+          cleanText = cleanText.replace(match[0], "").trim();
+        }
+      }
+
+      // 2. Extract raw JSON objects/arrays
+      if (a2uiMessages.length === 0) {
+        const rawRegex = /(\[\s*\{[\s\S]*\}\s*\]|\{[\s\S]*\"(?:beginRendering|surfaceUpdate|display_step_summary_card_response)\"[\s\S]*\})/gi;
+        while ((match = rawRegex.exec(text)) !== null) {
+          const items = extractA2UIFromObj(match[1]);
+          if (items.length) {
+            a2uiMessages.push(...items);
+            cleanText = cleanText.replace(match[0], "").trim();
+          }
+        }
+      }
+
+      return { cleanText, a2uiMessages };
+    }
+
+    function renderReply(bubbleWrapper, parts) {
+      bubbleWrapper.innerHTML = "";
+      
+      const allA2UI = [];
+      const cleanTexts = [];
+
+      for (const p of parts) {
+        if (!p) continue;
+        if (p.kind === "a2ui" && p.data) {
+          allA2UI.push(p.data);
+        } else if (p.kind === "text" || p.text) {
+          const rawText = p.text || "";
+          const { cleanText, a2uiMessages } = extractA2UIFromText(rawText);
+          if (cleanText) cleanTexts.push(cleanText);
+          if (a2uiMessages.length) allA2UI.push(...a2uiMessages);
+        }
+      }
+
+      const textCombined = cleanTexts.join("\n\n").trim();
+      if (textCombined) {
+        const textBubble = el("div", "bubble");
+        textBubble.innerHTML = formatMarkdown(textCombined);
+        bubbleWrapper.appendChild(textBubble);
+      }
+
+      if (allA2UI.length) {
+        const cardContainer = el("div", "a2ui-surface-wrapper");
+        const drew = renderSurface(allA2UI, cardContainer);
+        if (drew) {
+          bubbleWrapper.appendChild(cardContainer);
+        }
+      }
+
+      if (!bubbleWrapper.childNodes.length) {
+        const emptyBubble = el("div", "bubble");
+        emptyBubble.textContent = "(No response received.)";
+        bubbleWrapper.appendChild(emptyBubble);
+      }
+
+      // Single Copy button on Agent message responses
+      const copyText = textCombined || bubbleWrapper.textContent || "";
+      if (copyText) {
+        const agentActions = el("div", "msg-actions");
+        const copyBtn = el("button", "action-btn");
+        copyBtn.type = "button";
+        copyBtn.innerHTML = '<span class="material-symbols-outlined">content_copy</span><span>Copy</span>';
+        copyBtn.onclick = () => copyToClipboard(copyText, copyBtn);
+        agentActions.appendChild(copyBtn);
+        bubbleWrapper.appendChild(agentActions);
+      }
+
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    async function sendPrompt(text) {
+      if (!text || !text.trim()) return;
+      
+      if (currentAbortController) {
+        currentAbortController.abort();
+      }
+      currentAbortController = new AbortController();
+      const controller = currentAbortController;
+
+      // Add user message with actions (Copy, Edit, Stop)
+      createMsgRow("user", text);
+      
+      userInput.value = "";
+      sendBtn.disabled = true;
+
+      // Add typing indicator
+      const agentWrapper = createMsgRow("agent");
+      const typingBubble = el("div", "bubble");
+      typingBubble.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+      agentWrapper.appendChild(typingBubble);
+
+      const timeoutId = setTimeout(() => {
+        if (controller === currentAbortController) {
+          controller.abort();
+        }
+      }, 45000);
+
+      try {
+        const response = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text, user_id: "apex-user" }),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        const raw = await response.text();
+        let data;
+        try {
+          data = JSON.parse(raw);
+        } catch (err) {
+          throw new Error(`Server returned non-JSON response (HTTP ${response.status}): ${raw.slice(0, 200)}`);
+        }
+
+        renderReply(agentWrapper, data.parts || []);
+      } catch (err) {
+        clearTimeout(timeoutId);
+        const errMsg = err.name === 'AbortError' ? 'Request stopped.' : err.message;
+        typingBubble.innerHTML = `<span style="color:#ff5252;">⚠️ ${errMsg}</span>`;
+      } finally {
+        if (currentAbortController === controller) {
+          currentAbortController = null;
+        }
+        sendBtn.disabled = false;
+        userInput.focus();
+      }
+    }
+
+    chatForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      sendPrompt(userInput.value.trim());
+    });
+  </script>
+
+  <!-- Log Strength Workout Modal -->
+  <div id="workout-modal" class="workout-modal-overlay" onclick="closeWorkoutModal(event)">
+    <div class="workout-modal-container" onclick="event.stopPropagation()">
+      <div class="workout-modal-header">
+        <div class="workout-modal-title">
+          <span style="font-size:24px;">🏋️‍♂️</span>
+          <h3>Log Strength Workout (15 lb Kettlebell)</h3>
+        </div>
+        <button class="workout-modal-close" onclick="closeWorkoutModal()">&times;</button>
+      </div>
+
+      <form id="workout-modal-form" onsubmit="submitWorkoutModal(event)">
+        <!-- Exercise Selection -->
+        <div class="workout-form-group">
+          <label for="modal-exercise-select">Exercise Movement</label>
+          <select id="modal-exercise-select" class="workout-form-control" onchange="handleExerciseSelectChange()">
+            <option value="Goblet Squats (Pause)">Goblet Squats (Pause)</option>
+            <option value="Turkish Get-Ups">Turkish Get-Ups</option>
+            <option value="Kettlebell Swings (Single-Arm)">Kettlebell Swings (Single-Arm)</option>
+            <option value="Kettlebell Halos">Kettlebell Halos</option>
+            <option value="Single-Arm Overhead Press">Single-Arm Overhead Press</option>
+            <option value="Rotational Lunges">Rotational Lunges</option>
+            <option value="Suitcase Carries">Suitcase Carries</option>
+            <option value="Custom Entry">Custom Entry...</option>
+          </select>
+        </div>
+
+        <div id="modal-custom-group" class="workout-form-group" style="display:none;">
+          <label for="modal-custom-exercise">Custom Movement Name</label>
+          <input type="text" id="modal-custom-exercise" class="workout-form-control" placeholder="e.g., Kettlebell Windmill">
+        </div>
+
+        <!-- Completion Toggle -->
+        <div class="workout-toggle-container">
+          <label class="workout-toggle-label">
+            <input type="checkbox" id="modal-completed-toggle" checked onchange="handleCompletionToggleChange()">
+            <span>Completed Recommended Routine?</span>
+          </label>
+        </div>
+
+        <!-- Sets -->
+        <div class="workout-grid-2col">
+          <div class="workout-form-group">
+            <label for="modal-target-sets">Target Sets</label>
+            <input type="number" id="modal-target-sets" min="1" max="20" value="4" class="workout-form-control" oninput="handleTargetSetsChange()">
+          </div>
+          <div class="workout-form-group">
+            <label for="modal-actual-sets">Actual Sets Completed</label>
+            <input type="number" id="modal-actual-sets" min="0" max="20" value="4" class="workout-form-control">
+          </div>
+        </div>
+
+        <!-- Reps -->
+        <div class="workout-grid-2col">
+          <div class="workout-form-group">
+            <label for="modal-target-reps">Target Reps / Set</label>
+            <input type="number" id="modal-target-reps" min="1" max="100" value="10" class="workout-form-control" oninput="handleTargetRepsChange()">
+          </div>
+          <div class="workout-form-group">
+            <label for="modal-actual-reps">Actual Reps Completed</label>
+            <input type="number" id="modal-actual-reps" min="0" max="100" value="10" class="workout-form-control">
+          </div>
+        </div>
+
+        <!-- Duration & Intensity RPE -->
+        <div class="workout-grid-2col">
+          <div class="workout-form-group">
+            <label for="modal-duration">Duration (Minutes)</label>
+            <input type="number" id="modal-duration" min="1" max="180" value="25" class="workout-form-control">
+          </div>
+          <div class="workout-form-group">
+            <label for="modal-rpe">RPE Intensity (1–10): <strong id="modal-rpe-val" style="color:var(--accent-orange);">8</strong></label>
+            <input type="range" id="modal-rpe" min="1" max="10" step="1" value="8" class="workout-range-slider" oninput="document.getElementById('modal-rpe-val').textContent = this.value">
+          </div>
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="workout-modal-actions">
+          <button type="button" class="workout-btn-cancel" onclick="closeWorkoutModal()">Cancel</button>
+          <button type="submit" class="workout-btn-submit">Log Workout</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Log Cycling Modal -->
+  <div id="cycling-modal" class="workout-modal-overlay" onclick="closeCyclingModal(event)">
+    <div class="workout-modal-container" onclick="event.stopPropagation()">
+      <div class="workout-modal-header">
+        <div class="workout-modal-title">
+          <span style="font-size:24px;">🚴</span>
+          <h3>Log Cycling Ride (Pooboo Bike)</h3>
+        </div>
+        <button class="workout-modal-close" onclick="closeCyclingModal()">&times;</button>
+      </div>
+
+      <form id="cycling-modal-form" onsubmit="submitCyclingModal(event)">
+        <!-- Duration & Zone Grid -->
+        <div class="workout-grid-2col">
+          <div class="workout-form-group">
+            <label for="modal-cycling-duration">Duration (Minutes)</label>
+            <input type="number" id="modal-cycling-duration" min="1" max="300" value="45" class="workout-form-control" required>
+          </div>
+          <div class="workout-form-group">
+            <label for="modal-cycling-zone">Training Zone</label>
+            <select id="modal-cycling-zone" class="workout-form-control">
+              <option value="Zone 1 (Active Recovery < 115 bpm)">Zone 1 - Active Recovery (< 115 bpm)</option>
+              <option value="Zone 2 (Aerobic Base 115-126 bpm)" selected>Zone 2 - Aerobic Base (Target 115-126 bpm)</option>
+              <option value="Zone 3 (Tempo 127-140 bpm)">Zone 3 - Tempo (127-140 bpm)</option>
+              <option value="Zone 4 (Threshold 141-155 bpm)">Zone 4 - Threshold (141-155 bpm)</option>
+              <option value="Zone 5 (VO2 Max 156+ bpm)">Zone 5 - VO2 Max (156+ bpm)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Avg Watts & RPM Cadence Grid -->
+        <div class="workout-grid-2col">
+          <div class="workout-form-group">
+            <label for="modal-cycling-watts">Avg Power (Watts)</label>
+            <input type="number" id="modal-cycling-watts" min="0" max="1000" value="175" class="workout-form-control" required>
+          </div>
+          <div class="workout-form-group">
+            <label for="modal-cycling-rpm">Cadence (RPM)</label>
+            <input type="number" id="modal-cycling-rpm" min="0" max="250" value="88" class="workout-form-control" required>
+          </div>
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="workout-modal-actions">
+          <button type="button" class="workout-btn-cancel" onclick="closeCyclingModal()">Cancel</button>
+          <button type="submit" class="workout-btn-submit">Log Cycling Ride</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
