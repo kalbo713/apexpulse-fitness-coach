@@ -150,6 +150,321 @@
       font-family: 'JetBrains Mono', monospace;
     }
 
+    /* --- App Shell & Sidebar Layout --- */
+    .app-shell {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .chat-sidebar {
+      width: 280px;
+      background: rgba(16, 22, 38, 0.98);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid var(--card-border);
+      display: flex;
+      flex-direction: column;
+      transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, transform 0.25s ease;
+      z-index: 15;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .chat-sidebar.collapsed {
+      width: 0px !important;
+      min-width: 0px !important;
+      opacity: 0;
+      pointer-events: none;
+      border-right: none;
+      transform: translateX(-100%);
+    }
+
+    .sidebar-top {
+      padding: 1rem 0.85rem 0.6rem 0.85rem;
+    }
+
+    .btn-new-chat {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      background: linear-gradient(135deg, rgba(255, 87, 34, 0.16) 0%, rgba(255, 145, 0, 0.12) 100%);
+      border: 1px solid rgba(255, 87, 34, 0.45);
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+
+    .btn-new-chat:hover {
+      background: var(--gradient-orange);
+      border-color: #FF5722;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(255, 87, 34, 0.4);
+    }
+
+    .sidebar-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 1rem 0.4rem 1rem;
+    }
+
+    .sidebar-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    .sidebar-icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.2rem;
+      border-radius: 4px;
+      transition: color 0.15s;
+    }
+
+    .sidebar-icon-btn:hover {
+      color: var(--accent-orange-light);
+    }
+
+    .sessions-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.4rem 0.6rem 1rem 0.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .sessions-list::-webkit-scrollbar {
+      width: 5px;
+    }
+    .sessions-list::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 3px;
+    }
+
+    .category-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 0.35rem;
+    }
+
+    .category-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.45rem 0.6rem;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      transition: all 0.18s ease;
+      user-select: none;
+    }
+
+    .category-header:hover {
+      background: rgba(255, 255, 255, 0.07);
+      color: #fff;
+      border-color: rgba(255, 87, 34, 0.3);
+    }
+
+    .category-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .category-icon {
+      font-size: 15px;
+      color: var(--accent-orange-light);
+    }
+
+    .category-right-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .category-count-badge {
+      font-size: 0.68rem;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 0.1rem 0.45rem;
+      border-radius: 10px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .category-chevron {
+      font-size: 16px;
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      color: var(--text-muted);
+    }
+
+    .category-header.collapsed .category-chevron {
+      transform: rotate(-90deg);
+    }
+
+    .category-sessions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      margin-top: 0.3rem;
+      padding-left: 0.2rem;
+      transition: all 0.2s ease;
+    }
+
+    .category-sessions.collapsed {
+      display: none;
+    }
+
+    .category-empty {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      padding: 0.4rem 0.6rem;
+      font-style: italic;
+    }
+
+    .session-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 0.75rem;
+      border-radius: 10px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      user-select: none;
+      position: relative;
+      text-align: left;
+    }
+
+    .session-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .session-item.active {
+      background: linear-gradient(135deg, rgba(255, 87, 34, 0.16) 0%, rgba(22, 31, 54, 0.95) 100%);
+      border-color: rgba(255, 87, 34, 0.5);
+      color: #fff;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .session-item-content {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .session-icon {
+      font-size: 18px;
+      color: var(--accent-orange-light);
+      flex-shrink: 0;
+    }
+
+    .session-text-wrap {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .session-title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 0.86rem;
+    }
+
+    .session-meta {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .session-delete-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.15s, color 0.15s;
+      padding: 0.2rem;
+      display: flex;
+      align-items: center;
+      border-radius: 4px;
+    }
+
+    .session-item:hover .session-delete-btn {
+      opacity: 0.7;
+    }
+
+    .session-delete-btn:hover {
+      opacity: 1 !important;
+      color: #ff5252;
+    }
+
+    .sidebar-toggle-btn {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-right: 0.25rem;
+    }
+
+    .sidebar-toggle-btn:hover {
+      background: rgba(255, 87, 34, 0.2);
+      border-color: rgba(255, 87, 34, 0.4);
+      color: #fff;
+    }
+
+    .chat-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+
     /* --- Chat Container --- */
     #chat-container {
       flex: 1;
@@ -649,29 +964,37 @@
 
     .quick-chips-row {
       display: flex;
+      flex-wrap: wrap;
       gap: 0.5rem;
-      overflow-x: auto;
-      padding-bottom: 0.25rem;
-      scrollbar-width: none;
+      padding: 0.25rem 0;
+      align-items: center;
     }
-    .quick-chips-row::-webkit-scrollbar { display: none; }
 
     .chip {
       background: var(--bg-surface-elevated);
       border: 1px solid var(--card-border);
       border-radius: 20px;
-      padding: 0.3rem 0.75rem;
-      font-size: 0.75rem;
+      padding: 0.35rem 0.8rem;
+      font-size: 0.78rem;
       font-weight: 500;
       color: var(--text-secondary);
       white-space: nowrap;
       cursor: pointer;
-      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
     }
     .chip:hover {
       color: #fff;
       border-color: var(--accent-orange);
-      background: rgba(255, 87, 34, 0.12);
+      background: rgba(255, 87, 34, 0.14);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(255, 87, 34, 0.2);
+    }
+    .chip:active {
+      transform: translateY(0);
     }
 
     form#chat-form {
@@ -741,6 +1064,209 @@
       opacity: 0.6;
       cursor: not-allowed;
       transform: none;
+    }
+
+    /* --- Multimodal Batch Image Attachment & Horizontal Gallery Styles --- */
+    .attach-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--card-border);
+      color: var(--text-secondary);
+      border-radius: 12px;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .attach-btn:hover {
+      color: #fff;
+      border-color: var(--accent-orange);
+      background: rgba(255, 87, 34, 0.15);
+      transform: translateY(-1px);
+    }
+
+    .attach-btn .material-symbols-outlined {
+      font-size: 20px;
+    }
+
+    .image-gallery-container {
+      margin-bottom: 0.65rem;
+      background: rgba(22, 31, 54, 0.95);
+      border: 1px solid rgba(255, 87, 34, 0.35);
+      border-radius: 14px;
+      padding: 0.65rem 0.85rem;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35), 0 0 12px rgba(255, 87, 34, 0.12);
+      animation: fadeInPreview 0.22s ease-out;
+    }
+
+    @keyframes fadeInPreview {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .image-gallery-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .image-gallery-title {
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-orange-light);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .image-gallery-count {
+      background: rgba(255, 87, 34, 0.2);
+      border: 1px solid rgba(255, 87, 34, 0.4);
+      color: #fff;
+      font-size: 0.68rem;
+      padding: 0.1rem 0.45rem;
+      border-radius: 10px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .image-gallery-clear-all {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.15s ease;
+      padding: 0.1rem 0.3rem;
+    }
+
+    .image-gallery-clear-all:hover {
+      color: #ff5252;
+    }
+
+    .image-gallery-strip {
+      display: flex;
+      gap: 0.65rem;
+      overflow-x: auto;
+      padding: 0.25rem 0.1rem;
+      scrollbar-width: thin;
+    }
+
+    .image-gallery-strip::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .image-gallery-strip::-webkit-scrollbar-thumb {
+      background: rgba(255, 87, 34, 0.35);
+      border-radius: 4px;
+    }
+
+    .image-thumbnail-frame {
+      position: relative;
+      width: 68px;
+      height: 68px;
+      border-radius: 10px;
+      border: 1.5px solid rgba(255, 87, 34, 0.5);
+      background: rgba(13, 19, 34, 0.95);
+      flex-shrink: 0;
+      overflow: visible;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .image-thumbnail-frame:hover {
+      transform: translateY(-2px) scale(1.02);
+      border-color: #FF5722;
+      box-shadow: 0 6px 16px rgba(255, 87, 34, 0.35);
+    }
+
+    .image-thumbnail-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+      display: block;
+    }
+
+    .image-thumbnail-remove {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #ff5252;
+      border: 1.5px solid #fff;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+      opacity: 0.85;
+      transition: all 0.15s ease;
+      z-index: 5;
+    }
+
+    .image-thumbnail-frame:hover .image-thumbnail-remove,
+    .image-thumbnail-remove:hover {
+      opacity: 1;
+      transform: scale(1.15);
+      background: #d32f2f;
+    }
+
+    .image-thumbnail-name {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      color: #fff;
+      font-size: 0.58rem;
+      padding: 0.1rem 0.2rem;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border-bottom-left-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
+
+    /* Message Bubble Image Grid */
+    .user-msg-gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-bottom: 0.55rem;
+    }
+
+    .user-msg-image {
+      max-width: 160px;
+      max-height: 130px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      display: block;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s ease;
+    }
+
+    .user-msg-image:hover {
+      transform: scale(1.03);
     }
 
     @media (max-width: 640px) {
@@ -958,6 +1484,9 @@
   <!-- Top Header -->
   <header>
     <div class="brand-section">
+      <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle History Sidebar">
+        <span class="material-symbols-outlined" style="font-size:20px;">dock_to_left</span>
+      </button>
       <div class="brand-logo">
         <span class="material-symbols-outlined">bolt</span>
       </div>
@@ -969,7 +1498,7 @@
     <div class="header-stats">
       <div class="stat-pill">
         <span class="material-symbols-outlined" style="color:var(--accent-orange); font-size:16px;">schedule</span>
-        Fasting: <strong>16/8 Protocol</strong>
+        Fasting: <strong>16/8 (1PM - 9PM)</strong>
       </div>
       <div class="stat-pill">
         <span class="material-symbols-outlined" style="color:var(--accent-cyan); font-size:16px;">egg_alt</span>
@@ -986,66 +1515,119 @@
     </div>
   </header>
 
-  <!-- Chat Log -->
-  <div id="chat-container">
-    <!-- Welcome Card -->
-    <div class="welcome-card">
-      <div class="welcome-header">
-        <span class="material-symbols-outlined" style="color:var(--accent-orange); font-size:28px;">sports_gymnastics</span>
-        <h2>Welcome to ApexPulse Coach</h2>
-      </div>
-      <p>I track your functional strength training, indoor cycling, walking step aggregates (daily, weekly, yearly), 16/8 fasting schedule, and high-protein nutrition with visual A2UI cards.</p>
-      
-      <div class="quick-grid">
-        <div class="quick-btn" onclick="sendPrompt('Show my daily, weekly, and yearly step tracking summary card via A2UI.')">
-          <span>🚶</span> Step Analytics Card
-        </div>
-        <div class="quick-btn" onclick="populateLogSteps()">
-          <span>👟</span> Log Steps
-        </div>
-        <div class="quick-btn" onclick="sendPrompt('Check my fasting window and protein goals based on my current profile.')">
-          <span>🥩</span> Protein & Fasting Check
-        </div>
-        <div class="quick-btn" onclick="openWorkoutModal()">
-          <span>🏋️‍♂️</span> Log Strength Workout
-        </div>
-        <div class="quick-btn" onclick="openCyclingModal()">
-          <span>🚴</span> Log Cycling Ride
-        </div>
-        <div class="quick-btn" onclick="sendPrompt('Show me a summary of all workouts logged today and check my fasting window.')">
-          <span>📊</span> Today's Workout Summary
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Input Form -->
-  <div class="input-section">
-    <div class="input-container">
-      <div class="quick-chips-row">
-        <div class="chip" onclick="sendPrompt('Show my step summary card via A2UI.')">🚶 Step Card</div>
-        <div class="chip" onclick="populateLogSteps()">👟 Log Steps</div>
-        <div class="chip" onclick="sendPrompt('What is my current fasting status?')">⏱️ Fasting Timer</div>
-        <div class="chip" onclick="sendPrompt('Calculate my protein target for 200 lbs across meals in my 8-hour window.')">🍗 Protein Breakdown</div>
-        <div class="chip" onclick="sendPrompt('Suggest a high-protein post-workout meal to hit 60g protein.')">🥗 Post-Workout Meal</div>
-      </div>
-
-      <form id="chat-form">
-        <div class="input-wrapper">
-          <input 
-            type="text" 
-            id="user-input" 
-            placeholder="Ask your coach, log a workout, or check your fasting window…" 
-            autocomplete="off" 
-            autofocus
-          />
-        </div>
-        <button type="submit" id="send-btn">
-          <span>Send</span>
-          <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
+  <!-- App Main Layout with Collapsible History Sidebar -->
+  <div class="app-shell">
+    <!-- Left-Hand History Sidebar -->
+    <aside id="chat-sidebar" class="chat-sidebar">
+      <div class="sidebar-top">
+        <button id="new-chat-btn" class="btn-new-chat" onclick="handleNewChat()">
+          <span class="material-symbols-outlined" style="font-size:20px;">add_circle</span>
+          <span>New Chat</span>
         </button>
-      </form>
-    </div>
+      </div>
+
+      <div class="sidebar-header-row">
+        <span class="sidebar-title">Past Conversations</span>
+        <button class="sidebar-icon-btn" onclick="loadSessionsList()" title="Refresh conversations">
+          <span class="material-symbols-outlined" style="font-size:16px;">refresh</span>
+        </button>
+      </div>
+
+      <div id="sessions-list" class="sessions-list">
+        <!-- Rendered dynamically -->
+        <div style="color:var(--text-muted);font-size:0.8rem;padding:0.75rem 0.5rem;text-align:center;">Loading conversations...</div>
+      </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="chat-main">
+      <!-- Chat Log -->
+      <div id="chat-container">
+        <!-- Welcome Card -->
+        <div class="welcome-card">
+          <div class="welcome-header">
+            <span class="material-symbols-outlined" style="color:var(--accent-orange); font-size:28px;">sports_gymnastics</span>
+            <h2>Welcome to ApexPulse Coach</h2>
+          </div>
+          <p>I track your functional strength training, indoor cycling, walking step aggregates (daily, weekly, yearly), 16/8 fasting schedule, and high-protein nutrition with visual A2UI cards.</p>
+          
+          <div class="quick-grid">
+            <div class="quick-btn" onclick="sendPrompt('Show my daily, weekly, and yearly step tracking summary card via A2UI.')">
+              <span>🚶</span> Step Analytics Card
+            </div>
+            <div class="quick-btn" onclick="sendPrompt('Show my master biometrics dashboard card with cardiovascular, recovery, sleep, and body composition metrics via A2UI.')">
+              <span>❤️</span> Biometrics Summary Card
+            </div>
+            <div class="quick-btn" onclick="populateLogSteps()">
+              <span>👟</span> Log Steps
+            </div>
+            <div class="quick-btn" onclick="sendPrompt('Check my fasting window and protein goals based on my current profile.')">
+              <span>🥩</span> Protein & Fasting Check
+            </div>
+            <div class="quick-btn" onclick="openWorkoutModal()">
+              <span>🏋️‍♂️</span> Log Strength & Mobility
+            </div>
+            <div class="quick-btn" onclick="openCyclingModal()">
+              <span>🚴</span> Log Cycling Ride
+            </div>
+            <div class="quick-btn" onclick="sendPrompt('Show me a summary of all workouts logged today and check my fasting window.')">
+              <span>📊</span> Today's Workout Summary
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input Form -->
+      <div class="input-section">
+        <div class="input-container">
+          <div class="quick-chips-row">
+            <div class="chip" onclick="sendPrompt('Show my daily, weekly, and yearly step tracking summary card via A2UI.')">🚶 Step Analytics Card</div>
+            <div class="chip" onclick="sendPrompt('Show my master biometrics dashboard card with cardiovascular, recovery, sleep, and body composition metrics via A2UI.')">❤️ Biometrics Summary Card</div>
+            <div class="chip" onclick="openWorkoutModal()">🏋️‍♂️ Log Strength & Mobility</div>
+            <div class="chip" onclick="openCyclingModal()">🚴 Log Cycling</div>
+            <div class="chip" onclick="populateLogSteps()">👟 Log Steps</div>
+            <div class="chip" onclick="sendPrompt('What is my current fasting status?')">⏱️ Fasting Timer</div>
+            <div class="chip" onclick="sendPrompt('Calculate my protein target for 200 lbs across meals in my 8-hour window.')">🍗 Protein Breakdown</div>
+            <div class="chip" onclick="sendPrompt('Suggest a high-protein post-workout meal to hit 60g protein.')">🥗 Post-Workout Meal</div>
+          </div>
+
+          <!-- Dynamic Horizontal Image Gallery Container (Up to 5 images) -->
+          <div id="image-gallery-container" class="image-gallery-container" style="display:none;">
+            <div class="image-gallery-header">
+              <div class="image-gallery-title">
+                <span class="material-symbols-outlined" style="font-size:16px;">collections</span>
+                <span>Attached Photos</span>
+                <span id="image-gallery-count" class="image-gallery-count">0/5</span>
+              </div>
+              <button type="button" class="image-gallery-clear-all" onclick="clearAttachedImages()" title="Remove all attached images">Clear All</button>
+            </div>
+            <div id="image-gallery-strip" class="image-gallery-strip">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <form id="chat-form">
+            <input type="file" id="image-upload-input" accept="image/*" multiple style="display:none;" onchange="handleImageFileSelect(event)" />
+            <button type="button" id="attach-btn" class="attach-btn" title="Attach photos (Up to 5: meal, workout form, equipment, or biometrics)" onclick="document.getElementById('image-upload-input').click()">
+              <span class="material-symbols-outlined">add_photo_alternate</span>
+            </button>
+            <div class="input-wrapper">
+              <input 
+                type="text" 
+                id="user-input" 
+                placeholder="Ask your coach, log a workout, paste an image, or check fasting window…" 
+                autocomplete="off" 
+                autofocus
+              />
+            </div>
+            <button type="submit" id="send-btn">
+              <span>Send</span>
+              <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </main>
   </div>
 
   <script>
@@ -1134,6 +1716,19 @@
       }
     }
 
+    function handleEquipmentSelectChange() {
+      const equipSelect = document.getElementById("modal-equipment-select");
+      const weightInput = document.getElementById("modal-weight");
+      const equip = equipSelect.value;
+      if (equip.includes("15 lb")) weightInput.value = "15";
+      else if (equip.includes("12 lbs")) weightInput.value = "12";
+      else if (equip.includes("10 lbs")) weightInput.value = "10";
+      else if (equip.includes("8 lbs")) weightInput.value = "8";
+      else if (equip.includes("5 lbs")) weightInput.value = "5";
+      else if (equip.includes("3 lbs")) weightInput.value = "3";
+      else if (equip.includes("Balance") || equip.includes("Stretcher") || equip.includes("Mat")) weightInput.value = "0";
+    }
+
     function handleCompletionToggleChange() {
       const toggle = document.getElementById("modal-completed-toggle");
       const targetSets = document.getElementById("modal-target-sets");
@@ -1164,6 +1759,8 @@
       e.preventDefault();
       const select = document.getElementById("modal-exercise-select");
       const customInput = document.getElementById("modal-custom-exercise");
+      const equipSelect = document.getElementById("modal-equipment-select");
+      const weightInput = document.getElementById("modal-weight");
       const toggle = document.getElementById("modal-completed-toggle");
       const targetSets = document.getElementById("modal-target-sets").value || "4";
       const actualSets = document.getElementById("modal-actual-sets").value || "4";
@@ -1175,12 +1772,14 @@
       const exerciseName = (select.value === "Custom Entry" && customInput.value.trim()) 
         ? customInput.value.trim() 
         : select.value;
+      const selectedEquipment = equipSelect ? equipSelect.value : "15 lb Kettlebell";
+      const weightLbs = weightInput ? weightInput.value : "15";
 
       const completed = (toggle.checked && (parseInt(actualSets) >= parseInt(targetSets) && parseInt(actualReps) >= parseInt(targetReps))) 
         ? "Yes" 
         : "Partial";
 
-      const formattedMessage = `Logged Workout: ${exerciseName} | Weight: 15 lbs | Completed: ${completed} | Sets: ${actualSets}/${targetSets} | Reps: ${actualReps}/${targetReps} | Duration: ${duration} mins | RPE: ${rpe}`;
+      const formattedMessage = `Logged Workout: ${exerciseName} | Equipment: ${selectedEquipment} | Weight: ${weightLbs} lbs | Completed: ${completed} | Sets: ${actualSets}/${targetSets} | Reps: ${actualReps}/${targetReps} | Duration: ${duration} mins | RPE: ${rpe}`;
 
       closeWorkoutModal();
       sendPrompt(formattedMessage);
@@ -1286,7 +1885,7 @@
       document.body.removeChild(textarea);
     }
 
-    function createMsgRow(sender, text) {
+    function createMsgRow(sender, text, imageSrcOrList = null) {
       const row = el("div", `msg-row ${sender}`);
       const avatar = el("div", `avatar ${sender}-avatar`);
       avatar.innerHTML = sender === "user" 
@@ -1297,8 +1896,30 @@
       row.appendChild(avatar);
       row.appendChild(bubbleWrapper);
 
-      if (sender === "user" && text) {
-        const userBubble = el("div", "bubble", text);
+      const images = Array.isArray(imageSrcOrList) 
+        ? imageSrcOrList 
+        : (imageSrcOrList ? [imageSrcOrList] : []);
+
+      if (sender === "user" && (text || images.length > 0)) {
+        const userBubble = el("div", "bubble");
+        if (images.length > 0) {
+          const galleryDiv = el("div", "user-msg-gallery");
+          images.forEach((imgItem) => {
+            const src = typeof imgItem === "string" ? imgItem : (imgItem.base64 || imgItem.image);
+            if (src) {
+              const imgElem = el("img", "user-msg-image");
+              imgElem.src = src;
+              imgElem.alt = "Attached Image";
+              galleryDiv.appendChild(imgElem);
+            }
+          });
+          userBubble.appendChild(galleryDiv);
+        }
+        if (text) {
+          const textDiv = el("div");
+          textDiv.textContent = text;
+          userBubble.appendChild(textDiv);
+        }
         bubbleWrapper.appendChild(userBubble);
 
         // User message actions: Copy, Edit, Stop
@@ -1308,19 +1929,21 @@
         const copyBtn = el("button", "action-btn");
         copyBtn.type = "button";
         copyBtn.innerHTML = '<span class="material-symbols-outlined">content_copy</span><span>Copy</span>';
-        copyBtn.onclick = () => copyToClipboard(text, copyBtn);
+        copyBtn.onclick = () => copyToClipboard(text || "(Image)", copyBtn);
         actions.appendChild(copyBtn);
 
         // Edit button
-        const editBtn = el("button", "action-btn");
-        editBtn.type = "button";
-        editBtn.innerHTML = '<span class="material-symbols-outlined">edit</span><span>Edit</span>';
-        editBtn.onclick = () => {
-          userInput.value = text;
-          userInput.focus();
-          userInput.scrollIntoView({ behavior: "smooth", block: "center" });
-        };
-        actions.appendChild(editBtn);
+        if (text) {
+          const editBtn = el("button", "action-btn");
+          editBtn.type = "button";
+          editBtn.innerHTML = '<span class="material-symbols-outlined">edit</span><span>Edit</span>';
+          editBtn.onclick = () => {
+            userInput.value = text;
+            userInput.focus();
+            userInput.scrollIntoView({ behavior: "smooth", block: "center" });
+          };
+          actions.appendChild(editBtn);
+        }
 
         // Stop button
         const stopBtn = el("button", "action-btn stop-btn");
@@ -1449,7 +2072,7 @@
         return items;
       }
       if (obj && typeof obj === "object") {
-        for (const key of ["display_step_summary_card_response", "a2ui_card_json", "a2ui_payload", "a2ui_card", "result", "data", "response"]) {
+        for (const key of ["display_step_summary_card_response", "display_biometrics_summary_card_response", "a2ui_card_json", "a2ui_payload", "a2ui_card", "result", "data", "response"]) {
           if (key in obj) {
             const res = extractA2UIFromObj(obj[key]);
             if (res.length) return res;
@@ -1499,7 +2122,7 @@
 
     function extractA2UIFromText(text) {
       if (!text) return { cleanText: "", a2uiMessages: [] };
-      if (!text.includes("beginRendering") && !text.includes("surfaceUpdate") && !text.includes("display_step_summary_card_response")) {
+      if (!text.includes("beginRendering") && !text.includes("surfaceUpdate") && !text.includes("display_step_summary_card_response") && !text.includes("display_biometrics_summary_card_response")) {
         return { cleanText: text, a2uiMessages: [] };
       }
 
@@ -1519,7 +2142,7 @@
 
       // 2. Extract raw JSON objects/arrays
       if (a2uiMessages.length === 0) {
-        const rawRegex = /(\[\s*\{[\s\S]*\}\s*\]|\{[\s\S]*\"(?:beginRendering|surfaceUpdate|display_step_summary_card_response)\"[\s\S]*\})/gi;
+        const rawRegex = /(\[\s*\{[\s\S]*\}\s*\]|\{[\s\S]*\"(?:beginRendering|surfaceUpdate|display_step_summary_card_response|display_biometrics_summary_card_response)\"[\s\S]*\})/gi;
         while ((match = rawRegex.exec(text)) !== null) {
           const items = extractA2UIFromObj(match[1]);
           if (items.length) {
@@ -1586,8 +2209,410 @@
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
+    /* --- Session Management State & Functions --- */
+    let currentSessionId = null;
+    let chatSessions = [];
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById("chat-sidebar");
+      if (sidebar) {
+        sidebar.classList.toggle("collapsed");
+        const isCollapsed = sidebar.classList.contains("collapsed");
+        localStorage.setItem("apex_sidebar_collapsed", isCollapsed ? "true" : "false");
+      }
+    }
+
+    async function loadSessionsList() {
+      const listContainer = document.getElementById("sessions-list");
+      if (!listContainer) return;
+      
+      try {
+        const res = await fetch("/sessions?user_id=apex-user");
+        const data = await res.json();
+        chatSessions = data.sessions || [];
+        renderSessionsList();
+      } catch (err) {
+        console.error("Failed to load sessions:", err);
+        listContainer.innerHTML = '<div style="color:var(--text-muted);font-size:0.8rem;padding:0.5rem;text-align:center;">Could not load history.</div>';
+      }
+    }
+
+    let collapsedCategories = {};
+    try {
+      collapsedCategories = JSON.parse(localStorage.getItem("apex_collapsed_cats") || "{}");
+    } catch (e) {
+      collapsedCategories = {};
+    }
+
+    const CATEGORY_CONFIG = [
+      { key: "Workouts", icon: "fitness_center", label: "Workouts" },
+      { key: "Nutrition", icon: "restaurant", label: "Nutrition" },
+      { key: "Recovery", icon: "self_improvement", label: "Recovery" },
+      { key: "General", icon: "forum", label: "General" }
+    ];
+
+    function toggleCategoryCollapse(catKey) {
+      collapsedCategories[catKey] = !collapsedCategories[catKey];
+      try {
+        localStorage.setItem("apex_collapsed_cats", JSON.stringify(collapsedCategories));
+      } catch (e) {}
+      renderSessionsList();
+    }
+
+    function renderSessionsList() {
+      const listContainer = document.getElementById("sessions-list");
+      if (!listContainer) return;
+      
+      if (chatSessions.length === 0) {
+        listContainer.innerHTML = '<div style="color:var(--text-muted);font-size:0.8rem;padding:0.75rem 0.5rem;text-align:center;">No saved chats yet.<br>Start a conversation!</div>';
+        return;
+      }
+
+      listContainer.innerHTML = "";
+
+      // Group sessions by category
+      const grouped = {
+        "Workouts": [],
+        "Nutrition": [],
+        "Recovery": [],
+        "General": []
+      };
+
+      chatSessions.forEach((s) => {
+        const cat = s.category && grouped[s.category] ? s.category : "General";
+        grouped[cat].push(s);
+      });
+
+      CATEGORY_CONFIG.forEach(({ key, icon, label }) => {
+        const items = grouped[key] || [];
+        const isCollapsed = !!collapsedCategories[key];
+
+        const groupDiv = el("div", "category-group");
+
+        // Header dropdown bar
+        const headerDiv = el("div", `category-header ${isCollapsed ? "collapsed" : ""}`);
+        headerDiv.onclick = () => toggleCategoryCollapse(key);
+
+        const titleWrap = el("div", "category-title-wrap");
+        titleWrap.innerHTML = `
+          <span class="material-symbols-outlined category-icon">${icon}</span>
+          <span>${label}</span>
+        `;
+
+        const rightWrap = el("div", "category-right-wrap");
+        rightWrap.innerHTML = `
+          <span class="category-count-badge">${items.length}</span>
+          <span class="material-symbols-outlined category-chevron">expand_more</span>
+        `;
+
+        headerDiv.appendChild(titleWrap);
+        headerDiv.appendChild(rightWrap);
+        groupDiv.appendChild(headerDiv);
+
+        // Container of session items
+        const sessionsDiv = el("div", `category-sessions ${isCollapsed ? "collapsed" : ""}`);
+        
+        if (items.length === 0) {
+          const empty = el("div", "category-empty", "No chats in this category");
+          sessionsDiv.appendChild(empty);
+        } else {
+          items.forEach((s) => {
+            const item = el("div", `session-item ${s.session_id === currentSessionId ? "active" : ""}`);
+            item.onclick = () => loadSession(s.session_id);
+
+            const content = el("div", "session-item-content");
+            content.innerHTML = `
+              <span class="material-symbols-outlined session-icon">chat_bubble_outline</span>
+              <div class="session-text-wrap">
+                <span class="session-title" title="${s.title}">${s.title}</span>
+                <span class="session-meta">${s.message_count ? `${s.message_count} msgs` : 'New'}</span>
+              </div>
+            `;
+
+            const delBtn = el("button", "session-delete-btn");
+            delBtn.title = "Delete conversation";
+            delBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;">delete</span>';
+            delBtn.onclick = (e) => deleteSession(e, s.session_id);
+
+            item.appendChild(content);
+            item.appendChild(delBtn);
+            sessionsDiv.appendChild(item);
+          });
+        }
+
+        groupDiv.appendChild(sessionsDiv);
+        listContainer.appendChild(groupDiv);
+      });
+    }
+
+    function renderWelcomeCard() {
+      chatContainer.innerHTML = `
+        <div class="welcome-card">
+          <div class="welcome-header">
+            <span class="material-symbols-outlined" style="color:var(--accent-orange); font-size:28px;">sports_gymnastics</span>
+            <h2>Welcome to ApexPulse Coach</h2>
+          </div>
+          <p>I track your functional strength training, indoor cycling, walking step aggregates (daily, weekly, yearly), 16/8 fasting schedule, and high-protein nutrition with visual A2UI cards.</p>
+          
+          <div class="quick-grid">
+            <div class="quick-btn" onclick="sendPrompt('Show my daily, weekly, and yearly step tracking summary card via A2UI.')">
+              <span>🚶</span> Step Analytics Card
+            </div>
+            <div class="quick-btn" onclick="sendPrompt('Show my master biometrics dashboard card with cardiovascular, recovery, sleep, and body composition metrics via A2UI.')">
+              <span>❤️</span> Biometrics Summary Card
+            </div>
+            <div class="quick-btn" onclick="populateLogSteps()">
+              <span>👟</span> Log Steps
+            </div>
+            <div class="quick-btn" onclick="sendPrompt('Check my fasting window and protein goals based on my current profile.')">
+              <span>🥩</span> Protein & Fasting Check
+            </div>
+            <div class="quick-btn" onclick="openWorkoutModal()">
+              <span>🏋️‍♂️</span> Log Strength & Mobility
+            </div>
+            <div class="quick-btn" onclick="openCyclingModal()">
+              <span>🚴</span> Log Cycling Ride
+            </div>
+            <div class="quick-btn" onclick="sendPrompt('Show me a summary of all workouts logged today and check my fasting window.')">
+              <span>📊</span> Today's Workout Summary
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function handleNewChat() {
+      if (currentAbortController) {
+        currentAbortController.abort();
+        currentAbortController = null;
+      }
+      try {
+        const res = await fetch("/sessions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: "apex-user", title: "New Chat" })
+        });
+        const data = await res.json();
+        currentSessionId = data.session.session_id;
+      } catch (err) {
+        currentSessionId = "session_" + Date.now();
+      }
+      renderWelcomeCard();
+      renderSessionsList();
+      userInput.focus();
+    }
+
+    async function loadSession(sessionId) {
+      if (!sessionId) return;
+      if (currentAbortController) {
+        currentAbortController.abort();
+        currentAbortController = null;
+      }
+      currentSessionId = sessionId;
+      renderSessionsList();
+      
+      chatContainer.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:center;padding:3rem;color:var(--text-muted);gap:0.5rem;">
+          <span class="material-symbols-outlined" style="animation:spin 1s linear infinite;">sync</span>
+          <span>Loading conversation history...</span>
+        </div>
+      `;
+
+      try {
+        const res = await fetch(`/sessions/${sessionId}?user_id=apex-user`);
+        if (!res.ok) throw new Error("Failed to load session history");
+        const data = await res.json();
+        const session = data.session;
+        
+        chatContainer.innerHTML = "";
+        const messages = (session && session.messages) || [];
+
+        if (messages.length === 0) {
+          renderWelcomeCard();
+        } else {
+          for (const msg of messages) {
+            if (msg.role === "user") {
+              createMsgRow("user", msg.text);
+            } else {
+              const agentWrapper = createMsgRow("agent");
+              if (msg.parts && msg.parts.length > 0) {
+                renderReply(agentWrapper, msg.parts);
+              } else {
+                renderReply(agentWrapper, [{ kind: "text", text: msg.text || "" }]);
+              }
+            }
+          }
+        }
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      } catch (err) {
+        console.error("Error loading session:", err);
+        chatContainer.innerHTML = `<div style="color:#ff5252;padding:1.5rem;text-align:center;">⚠️ Failed to load session: ${err.message}</div>`;
+      }
+    }
+
+    async function deleteSession(e, sessionId) {
+      if (e) e.stopPropagation();
+      try {
+        await fetch(`/sessions/${sessionId}?user_id=apex-user`, { method: "DELETE" });
+        chatSessions = chatSessions.filter(s => s.session_id !== sessionId);
+        if (currentSessionId === sessionId) {
+          handleNewChat();
+        } else {
+          renderSessionsList();
+        }
+      } catch (err) {
+        console.error("Failed to delete session:", err);
+      }
+    }
+
+    /* --- Multimodal Batch Image Attachment State & Handlers (Max 5 Limit) --- */
+    const MAX_ATTACHED_IMAGES = 5;
+    let attachedImages = []; // Array of { id, base64, mimeType, name, size }
+
+    function formatBytes(bytes) {
+      if (!bytes) return "0 B";
+      const k = 1024;
+      const sizes = ["B", "KB", "MB", "GB"];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+    }
+
+    function renderImageGallery() {
+      const container = document.getElementById("image-gallery-container");
+      const strip = document.getElementById("image-gallery-strip");
+      const countBadge = document.getElementById("image-gallery-count");
+      if (!container || !strip || !countBadge) return;
+
+      if (attachedImages.length === 0) {
+        container.style.display = "none";
+        strip.innerHTML = "";
+        countBadge.textContent = `0/${MAX_ATTACHED_IMAGES}`;
+        return;
+      }
+
+      container.style.display = "block";
+      countBadge.textContent = `${attachedImages.length}/${MAX_ATTACHED_IMAGES}`;
+      strip.innerHTML = "";
+
+      attachedImages.forEach((imgObj, index) => {
+        const frame = el("div", "image-thumbnail-frame");
+        frame.title = `${imgObj.name} (${imgObj.size})`;
+
+        const imgElem = el("img");
+        imgElem.src = imgObj.base64;
+        imgElem.alt = imgObj.name;
+
+        const removeBtn = el("button", "image-thumbnail-remove");
+        removeBtn.type = "button";
+        removeBtn.innerHTML = "&times;";
+        removeBtn.title = "Remove image";
+        removeBtn.onclick = (e) => {
+          e.stopPropagation();
+          removeAttachedImage(index);
+        };
+
+        const nameOverlay = el("div", "image-thumbnail-name", imgObj.name);
+
+        frame.appendChild(imgElem);
+        frame.appendChild(removeBtn);
+        frame.appendChild(nameOverlay);
+        strip.appendChild(frame);
+      });
+    }
+
+    function handleImageFileSelect(e) {
+      const files = Array.from(e.target.files || []);
+      if (!files.length) return;
+      processSelectedImageFiles(files);
+      e.target.value = "";
+    }
+
+    function processSelectedImageFiles(files) {
+      const validFiles = files.filter(f => f.type && f.type.startsWith("image/"));
+      if (validFiles.length === 0) {
+        alert("Please select valid image files (PNG, JPG, WebP, etc.).");
+        return;
+      }
+
+      if (attachedImages.length >= MAX_ATTACHED_IMAGES) {
+        alert(`Maximum ${MAX_ATTACHED_IMAGES} images allowed per message. Please remove an image before adding more.`);
+        return;
+      }
+
+      const availableSlots = MAX_ATTACHED_IMAGES - attachedImages.length;
+      const filesToProcess = validFiles.slice(0, availableSlots);
+      if (validFiles.length > availableSlots) {
+        alert(`You can attach up to ${MAX_ATTACHED_IMAGES} images per message. Added ${availableSlots} image(s), ignored remaining.`);
+      }
+
+      let processedCount = 0;
+      filesToProcess.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          if (attachedImages.length < MAX_ATTACHED_IMAGES) {
+            attachedImages.push({
+              id: "img_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
+              base64: event.target.result,
+              mimeType: file.type || "image/jpeg",
+              name: file.name || "attached_image.png",
+              size: formatBytes(file.size)
+            });
+          }
+          processedCount++;
+          if (processedCount === filesToProcess.length) {
+            renderImageGallery();
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function removeAttachedImage(index) {
+      if (index >= 0 && index < attachedImages.length) {
+        attachedImages.splice(index, 1);
+        renderImageGallery();
+      }
+    }
+
+    function clearAttachedImages() {
+      attachedImages = [];
+      const uploadInput = document.getElementById("image-upload-input");
+      if (uploadInput) uploadInput.value = "";
+      renderImageGallery();
+    }
+
+    // Paste event listener on userInput to support direct clipboard paste (single or multiple)
+    userInput.addEventListener("paste", (e) => {
+      const items = (e.clipboardData || window.clipboardData)?.items;
+      if (items) {
+        const imageFiles = [];
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type && items[i].type.indexOf("image") !== -1) {
+            const blob = items[i].getAsFile();
+            if (blob) {
+              imageFiles.push(blob);
+            }
+          }
+        }
+        if (imageFiles.length > 0) {
+          if (attachedImages.length >= MAX_ATTACHED_IMAGES) {
+            alert(`Maximum ${MAX_ATTACHED_IMAGES} images allowed per message. Please remove an image before adding more.`);
+            e.preventDefault();
+            return;
+          }
+          processSelectedImageFiles(imageFiles);
+          e.preventDefault();
+        }
+      }
+    });
+
     async function sendPrompt(text) {
-      if (!text || !text.trim()) return;
+      const currentImages = [...attachedImages];
+      const hasText = text && text.trim();
+
+      if (!hasText && currentImages.length === 0) return;
+
+      const userText = hasText ? text.trim() : `Please analyze ${currentImages.length === 1 ? 'this attached image' : `these ${currentImages.length} attached images`}.`;
       
       if (currentAbortController) {
         currentAbortController.abort();
@@ -1595,10 +2620,12 @@
       currentAbortController = new AbortController();
       const controller = currentAbortController;
 
-      // Add user message with actions (Copy, Edit, Stop)
-      createMsgRow("user", text);
+      // Add user message with actions and image thumbnails if present
+      createMsgRow("user", userText, currentImages.map(img => img.base64));
       
+      // Clear input and attached images state
       userInput.value = "";
+      clearAttachedImages();
       sendBtn.disabled = true;
 
       // Add typing indicator
@@ -1614,10 +2641,21 @@
       }, 45000);
 
       try {
+        const payload = {
+          message: userText, 
+          user_id: "apex-user",
+          session_id: currentSessionId 
+        };
+        if (currentImages.length > 0) {
+          payload.images = currentImages.map(img => img.base64);
+          payload.image = currentImages[0].base64;
+          payload.mime_type = currentImages[0].mimeType;
+        }
+
         const response = await fetch("/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: text, user_id: "apex-user" }),
+          body: JSON.stringify(payload),
           signal: controller.signal
         });
         clearTimeout(timeoutId);
@@ -1630,7 +2668,13 @@
           throw new Error(`Server returned non-JSON response (HTTP ${response.status}): ${raw.slice(0, 200)}`);
         }
 
+        if (data.session_id) {
+          currentSessionId = data.session_id;
+        }
+
         renderReply(agentWrapper, data.parts || []);
+        // Refresh sidebar so auto-generated title or new session appears
+        loadSessionsList();
       } catch (err) {
         clearTimeout(timeoutId);
         const errMsg = err.name === 'AbortError' ? 'Request stopped.' : err.message;
@@ -1644,19 +2688,28 @@
       }
     }
 
+    window.addEventListener("DOMContentLoaded", () => {
+      const savedCollapsed = localStorage.getItem("apex_sidebar_collapsed");
+      if (savedCollapsed === "true") {
+        const sidebar = document.getElementById("chat-sidebar");
+        if (sidebar) sidebar.classList.add("collapsed");
+      }
+      loadSessionsList();
+    });
+
     chatForm.addEventListener("submit", (e) => {
       e.preventDefault();
       sendPrompt(userInput.value.trim());
     });
   </script>
 
-  <!-- Log Strength Workout Modal -->
+  <!-- Log Strength & Mobility Workout Modal -->
   <div id="workout-modal" class="workout-modal-overlay" onclick="closeWorkoutModal(event)">
     <div class="workout-modal-container" onclick="event.stopPropagation()">
       <div class="workout-modal-header">
         <div class="workout-modal-title">
           <span style="font-size:24px;">🏋️‍♂️</span>
-          <h3>Log Strength Workout (15 lb Kettlebell)</h3>
+          <h3>Log Strength & Mobility Workout</h3>
         </div>
         <button class="workout-modal-close" onclick="closeWorkoutModal()">&times;</button>
       </div>
@@ -1673,13 +2726,43 @@
             <option value="Single-Arm Overhead Press">Single-Arm Overhead Press</option>
             <option value="Rotational Lunges">Rotational Lunges</option>
             <option value="Suitcase Carries">Suitcase Carries</option>
+            <option value="Dumbbell Lateral Raises">Dumbbell Lateral Raises</option>
+            <option value="Dumbbell Bicep Curls">Dumbbell Bicep Curls</option>
+            <option value="Dumbbell Overhead Press">Dumbbell Overhead Press</option>
+            <option value="Dumbbell Romanian Deadlifts">Dumbbell Romanian Deadlifts</option>
+            <option value="Circular Balance Board Stability Drill">Circular Balance Board Stability Drill</option>
+            <option value="Calf Stretcher Mobility & Plantar Stretch">Calf Stretcher Mobility & Plantar Stretch</option>
+            <option value="Yoga Mat Mobility & Core Flow">Yoga Mat Mobility & Core Flow</option>
             <option value="Custom Entry">Custom Entry...</option>
           </select>
         </div>
 
         <div id="modal-custom-group" class="workout-form-group" style="display:none;">
           <label for="modal-custom-exercise">Custom Movement Name</label>
-          <input type="text" id="modal-custom-exercise" class="workout-form-control" placeholder="e.g., Kettlebell Windmill">
+          <input type="text" id="modal-custom-exercise" class="workout-form-control" placeholder="e.g., Dumbbell Hammer Curl, Balance Squat">
+        </div>
+
+        <!-- Equipment & Weight Selection -->
+        <div class="workout-grid-2col">
+          <div class="workout-form-group">
+            <label for="modal-equipment-select">Equipment Used</label>
+            <select id="modal-equipment-select" class="workout-form-control" onchange="handleEquipmentSelectChange()">
+              <option value="15 lb Kettlebell">15 lb Kettlebell</option>
+              <option value="Dumbbells (12 lbs)">Dumbbells (12 lbs)</option>
+              <option value="Dumbbells (10 lbs)">Dumbbells (10 lbs)</option>
+              <option value="Dumbbells (8 lbs)">Dumbbells (8 lbs)</option>
+              <option value="Dumbbells (5 lbs)">Dumbbells (5 lbs)</option>
+              <option value="Dumbbells (3 lbs)">Dumbbells (3 lbs)</option>
+              <option value="Circular Balance Board">Circular Balance Board</option>
+              <option value="Calf Stretcher">Calf Stretcher</option>
+              <option value="Yoga Mat / Bodyweight">Yoga Mat / Bodyweight</option>
+            </select>
+          </div>
+
+          <div class="workout-form-group">
+            <label for="modal-weight">Weight (lbs)</label>
+            <input type="number" id="modal-weight" min="0" max="100" step="0.5" value="15" class="workout-form-control">
+          </div>
         </div>
 
         <!-- Completion Toggle -->

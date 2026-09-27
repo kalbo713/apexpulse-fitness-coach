@@ -92,7 +92,7 @@ def _extract_items_recursive(obj: Any) -> List[dict]:
                 items.extend(_extract_items_recursive(item))
         return items
     if isinstance(obj, dict):
-        for key in ("display_step_summary_card_response", "a2ui_card_json", "a2ui_payload", "a2ui_card", "result", "data", "response"):
+        for key in ("display_step_summary_card_response", "display_biometrics_summary_card_response", "a2ui_card_json", "a2ui_payload", "a2ui_card", "result", "data", "response"):
             if key in obj:
                 res = _extract_items_recursive(obj[key])
                 if res:
@@ -119,7 +119,7 @@ def _extract_a2ui_messages(text: str) -> list[dict]:
 
     # 2. If nothing found via _iter_json_values, search for raw patterns
     if not messages:
-        pattern = re.compile(r"(\[\s*\{[\s\S]*\}\s*\]|\{[\s\S]*\"(?:beginRendering|surfaceUpdate)\"[\s\S]*\})")
+        pattern = re.compile(r"(\[\s*\{[\s\S]*\}\s*\]|\{[\s\S]*\"(?:beginRendering|surfaceUpdate|display_step_summary_card_response|display_biometrics_summary_card_response)\"[\s\S]*\})")
         for match in pattern.finditer(text):
             extracted = _extract_items_recursive(match.group(1))
             messages.extend(extracted)

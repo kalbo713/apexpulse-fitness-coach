@@ -30,5 +30,5 @@ COPY frontend/ ./frontend/
 # Expose container port
 EXPOSE 8080
 
-# Run FastAPI frontend + Agent backend with uvicorn
-CMD ["uvicorn", "frontend.main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Run FastAPI frontend + Agent backend with uvicorn listening on $PORT
+CMD ["sh", "-c", "exec uvicorn frontend.main:app --host 0.0.0.0 --port ${PORT:-8080}"]

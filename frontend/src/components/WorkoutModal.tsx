@@ -6,7 +6,7 @@ interface WorkoutModalProps {
   onSubmit: (formattedMessage: string) => void;
 }
 
-export const KETTLEBELL_EXERCISES = [
+export const WORKOUT_EXERCISES = [
   'Goblet Squats (Pause)',
   'Turkish Get-Ups',
   'Kettlebell Swings (Single-Arm)',
@@ -14,12 +14,33 @@ export const KETTLEBELL_EXERCISES = [
   'Single-Arm Overhead Press',
   'Rotational Lunges',
   'Suitcase Carries',
+  'Dumbbell Lateral Raises',
+  'Dumbbell Bicep Curls',
+  'Dumbbell Overhead Press',
+  'Dumbbell Romanian Deadlifts',
+  'Circular Balance Board Stability Drill',
+  'Calf Stretcher Mobility & Plantar Stretch',
+  'Yoga Mat Mobility & Core Flow',
   'Custom Entry'
+];
+
+export const EQUIPMENT_OPTIONS = [
+  '15 lb Kettlebell',
+  'Dumbbells (12 lbs)',
+  'Dumbbells (10 lbs)',
+  'Dumbbells (8 lbs)',
+  'Dumbbells (5 lbs)',
+  'Dumbbells (3 lbs)',
+  'Circular Balance Board',
+  'Calf Stretcher',
+  'Yoga Mat / Bodyweight'
 ];
 
 export const WorkoutModal: React.FC<WorkoutModalProps> = ({ isOpen, onClose, onSubmit }) => {
   const [selectedExercise, setSelectedExercise] = useState('Goblet Squats (Pause)');
   const [customExercise, setCustomExercise] = useState('');
+  const [selectedEquipment, setSelectedEquipment] = useState('15 lb Kettlebell');
+  const [weightLbs, setWeightLbs] = useState<number>(15);
   const [completedRecommended, setCompletedRecommended] = useState(true);
   const [targetSets, setTargetSets] = useState<number>(4);
   const [actualSets, setActualSets] = useState<number>(4);
@@ -33,6 +54,8 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({ isOpen, onClose, onS
   const handleReset = () => {
     setSelectedExercise('Goblet Squats (Pause)');
     setCustomExercise('');
+    setSelectedEquipment('15 lb Kettlebell');
+    setWeightLbs(15);
     setCompletedRecommended(true);
     setTargetSets(4);
     setActualSets(4);
@@ -47,6 +70,17 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({ isOpen, onClose, onS
     onClose();
   };
 
+  const handleEquipmentChange = (equip: string) => {
+    setSelectedEquipment(equip);
+    if (equip.includes('15 lb')) setWeightLbs(15);
+    else if (equip.includes('12 lbs')) setWeightLbs(12);
+    else if (equip.includes('10 lbs')) setWeightLbs(10);
+    else if (equip.includes('8 lbs')) setWeightLbs(8);
+    else if (equip.includes('5 lbs')) setWeightLbs(5);
+    else if (equip.includes('3 lbs')) setWeightLbs(3);
+    else if (equip.includes('Balance') || equip.includes('Stretcher') || equip.includes('Mat')) setWeightLbs(0);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const exerciseName = selectedExercise === 'Custom Entry' && customExercise.trim()
@@ -57,7 +91,7 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({ isOpen, onClose, onS
       ? 'Yes'
       : 'Partial';
 
-    const formattedMessage = `Logged Workout: ${exerciseName} | Weight: 15 lbs | Completed: ${completedStatus} | Sets: ${actualSets}/${targetSets} | Reps: ${actualReps}/${targetReps} | Duration: ${durationMinutes} mins | RPE: ${rpe}`;
+    const formattedMessage = `Logged Workout: ${exerciseName} | Equipment: ${selectedEquipment} | Weight: ${weightLbs} lbs | Completed: ${completedStatus} | Sets: ${actualSets}/${targetSets} | Reps: ${actualReps}/${targetReps} | Duration: ${durationMinutes} mins | RPE: ${rpe}`;
 
     onSubmit(formattedMessage);
     handleClose();
@@ -69,7 +103,7 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({ isOpen, onClose, onS
         <div className="workout-modal-header">
           <div className="workout-modal-title">
             <span className="workout-modal-icon">🏋️‍♂️</span>
-            <h3>Log Strength Workout (15 lb Kettlebell)</h3>
+            <h3>Log Strength & Mobility Workout</h3>
           </div>
           <button className="workout-modal-close" onClick={handleClose} aria-label="Close modal">
             &times;
@@ -86,7 +120,7 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({ isOpen, onClose, onS
               onChange={(e) => setSelectedExercise(e.target.value)}
               className="workout-form-control"
             >
-              {KETTLEBELL_EXERCISES.map((ex) => (
+              {WORKOUT_EXERCISES.map((ex) => (
                 <option key={ex} value={ex}>{ex}</option>
               ))}
             </select>
@@ -100,12 +134,43 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({ isOpen, onClose, onS
                 type="text"
                 value={customExercise}
                 onChange={(e) => setCustomExercise(e.target.value)}
-                placeholder="e.g., Kettlebell Windmill"
+                placeholder="e.g., Dumbbell Lateral Raise, Balance Squat"
                 className="workout-form-control"
                 required
               />
             </div>
           )}
+
+          {/* Equipment & Weight Selection */}
+          <div className="workout-grid-2col">
+            <div className="workout-form-group">
+              <label htmlFor="equipment-select">Equipment Used</label>
+              <select
+                id="equipment-select"
+                value={selectedEquipment}
+                onChange={(e) => handleEquipmentChange(e.target.value)}
+                className="workout-form-control"
+              >
+                {EQUIPMENT_OPTIONS.map((equip) => (
+                  <option key={equip} value={equip}>{equip}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="workout-form-group">
+              <label htmlFor="workout-weight">Weight (lbs)</label>
+              <input
+                id="workout-weight"
+                type="number"
+                min="0"
+                max="100"
+                step="0.5"
+                value={weightLbs}
+                onChange={(e) => setWeightLbs(parseFloat(e.target.value) || 0)}
+                className="workout-form-control"
+              />
+            </div>
+          </div>
 
           {/* Completion Toggle */}
           <div className="workout-toggle-container">
@@ -238,3 +303,4 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({ isOpen, onClose, onS
 };
 
 export default WorkoutModal;
+

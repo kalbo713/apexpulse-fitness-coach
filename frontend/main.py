@@ -8,6 +8,7 @@ Supports two runtime modes:
 """
 
 import asyncio
+import base64
 import json
 import os
 import re
@@ -154,7 +155,7 @@ def extract_a2ui_items_from_obj(obj: Any) -> List[Dict]:
                 items.extend(extract_a2ui_items_from_obj(item))
         return items
     if isinstance(obj, dict):
-        for key in ("display_step_summary_card_response", "a2ui_card_json", "a2ui_payload", "a2ui_card", "result", "data", "response"):
+        for key in ("display_step_summary_card_response", "display_biometrics_summary_card_response", "a2ui_card_json", "a2ui_payload", "a2ui_card", "result", "data", "response"):
             if key in obj:
                 res = extract_a2ui_items_from_obj(obj[key])
                 if res:
@@ -183,7 +184,7 @@ def _separate_text_and_a2ui(text: str) -> Tuple[str, List[Dict]]:
 
     # 2. Match raw top-level or inline JSON containing beginRendering or surfaceUpdate
     if not a2ui_messages and ("beginRendering" in text or "surfaceUpdate" in text):
-        json_pattern = re.compile(r"(\[\s*\{[\s\S]*\}\s*\]|\{[\s\S]*\"(?:beginRendering|surfaceUpdate|display_step_summary_card_response)\"[\s\S]*\})")
+        json_pattern = re.compile(r"(\[\s*\{[\s\S]*\}\s*\]|\{[\s\S]*\"(?:beginRendering|surfaceUpdate|display_step_summary_card_response|display_biometrics_summary_card_response)\"[\s\S]*\})")
         for match in json_pattern.finditer(text):
             raw_match = match.group(1)
             items = extract_a2ui_items_from_obj(raw_match)
@@ -215,12 +216,118 @@ async def _json_errors(request: Request, exc: Exception):
     )
 
 
+from app.agent import (
+    create_chat_session,
+    save_message_to_session,
+    list_chat_sessions,
+    get_chat_session_history,
+    delete_chat_session,
+)
+
+
+@app.get("/sessions")
+async def get_all_sessions(user_id: str = "apex-user"):
+    """Fetches all past chat sessions in reverse chronological order."""
+    sessions = list_chat_sessions(user_id=user_id)
+    return JSONResponse({"sessions": sessions})
+
+
+@app.post("/sessions")
+async def create_new_session(req: Request):
+    """Generates a fresh chat session with a unique session_id."""
+    body = {}
+    try:
+        body = await req.json()
+    except Exception:
+        pass
+    user_id = body.get("user_id") or "apex-user"
+    title = body.get("title") or "New Chat"
+    category = body.get("category") or "General"
+    session = create_chat_session(user_id=user_id, title=title, category=category)
+    return JSONResponse({"session": session})
+
+
+@app.get("/sessions/{session_id}")
+async def get_single_session(session_id: str, user_id: str = "apex-user"):
+    """Loads a specific session's full message history and metadata."""
+    session = get_chat_session_history(session_id, user_id=user_id)
+    if not session:
+        return JSONResponse(status_code=404, content={"error": f"Session '{session_id}' not found"})
+    return JSONResponse({"session": session})
+
+
+@app.delete("/sessions/{session_id}")
+async def remove_single_session(session_id: str, user_id: str = "apex-user"):
+    """Deletes a chat session from Firestore and active cache."""
+    success = delete_chat_session(session_id, user_id=user_id)
+    if session_id in local_sessions:
+        local_sessions.pop(session_id, None)
+    return JSONResponse({"status": "success", "session_id": session_id})
+
+
 @app.post("/chat")
 async def chat(req: Request):
     body = await req.json()
     message = body.get("message", "")
-    user_id = body.get("user_id") or "web-user"
-    print(f"📩 [Chat] Received from '{user_id}': {message}")
+    images_input = body.get("images") or body.get("images_base64")
+    image_base64 = body.get("image") or body.get("image_base64")
+    image_mime_type = body.get("mime_type") or body.get("image_mime_type") or "image/jpeg"
+    user_id = body.get("user_id") or "apex-user"
+    session_id = body.get("session_id")
+
+    # If no session_id provided, create a fresh session document
+    if not session_id:
+        new_sess = create_chat_session(user_id=user_id, title="New Chat")
+        session_id = new_sess["session_id"]
+
+    # Decode optional batch of base64 images into (bytes, mime_type) tuples (max 5 images limit)
+    decoded_images: List[Tuple[bytes, str]] = []
+    raw_images_list: List[Union[str, Dict]] = []
+
+    if images_input and isinstance(images_input, list):
+        raw_images_list.extend(images_input[:5])
+    elif image_base64:
+        raw_images_list.append({"image": image_base64, "mime_type": image_mime_type})
+
+    for img_item in raw_images_list:
+        raw_b64 = ""
+        item_mime = "image/jpeg"
+        if isinstance(img_item, dict):
+            raw_b64 = img_item.get("base64") or img_item.get("image") or ""
+            item_mime = img_item.get("mime_type") or img_item.get("mimeType") or "image/jpeg"
+        elif isinstance(img_item, str):
+            raw_b64 = img_item
+            item_mime = "image/jpeg"
+
+        raw_b64 = raw_b64.strip()
+        if not raw_b64:
+            continue
+
+        if "," in raw_b64:
+            header, raw_b64 = raw_b64.split(",", 1)
+            if "data:" in header and ";base64" in header:
+                detected_mime = header.split("data:")[1].split(";base64")[0]
+                if detected_mime:
+                    item_mime = detected_mime
+        try:
+            img_bytes = base64.b64decode(raw_b64)
+            if img_bytes:
+                decoded_images.append((img_bytes, item_mime))
+        except Exception as e:
+            print(f"⚠️ Failed to decode base64 batch image: {e}")
+
+    # Strictly enforce 5-image limit
+    decoded_images = decoded_images[:5]
+
+    log_snippet = message if message else f"({len(decoded_images)} image{'s' if len(decoded_images) > 1 else ''} attached)"
+    print(f"📩 [Chat] Received from '{user_id}' [Session: {session_id}] ({len(decoded_images)} images): {log_snippet}")
+
+    # 1. Persist user message & trigger auto-titling if this is the first message
+    user_saved_text = message
+    if decoded_images and not message:
+        user_saved_text = f"📷 [{len(decoded_images)} Image{'s' if len(decoded_images) > 1 else ''} Attached]"
+    save_message_to_session(session_id=session_id, role="user", text=user_saved_text, user_id=user_id)
+
     parts: List[Dict] = []
 
     try:
@@ -239,11 +346,12 @@ async def chat(req: Request):
                 )
                 a2a_client = factory.create(card)
 
+                msg_parts = [Part(root=TextPart(text=message or f"Please analyze {'this attached image' if len(decoded_images) == 1 else f'these {len(decoded_images)} attached images'}."))]
                 msg = Message(
                     message_id=str(uuid.uuid4()),
                     role=Role.user,
-                    parts=[Part(root=TextPart(text=message))],
-                    context_id=_contexts.get(user_id),
+                    parts=msg_parts,
+                    context_id=_contexts.get(session_id or user_id),
                 )
 
                 last_task = None
@@ -255,7 +363,7 @@ async def chat(req: Request):
                     if task is not None:
                         last_task = task
                         if getattr(task, "context_id", None):
-                            _contexts[user_id] = task.context_id
+                            _contexts[session_id or user_id] = task.context_id
                     if isinstance(update, TaskArtifactUpdateEvent):
                         got_artifact_update = True
                         parts.extend(_extract_parts(update.artifact.parts))
@@ -264,28 +372,34 @@ async def chat(req: Request):
                     for artifact in getattr(last_task, "artifacts", None) or []:
                         parts.extend(_extract_parts(artifact.parts))
         else:
-            # Local Direct Mode (ADK InMemoryRunner)
+            # Local Direct Mode (ADK InMemoryRunner with per-session context)
             from google.genai import types as genai_types
             
-            # Ensure fresh session or existing valid session
-            if user_id not in local_sessions:
-                session = await runner.session_service.create_session(
+            # Ensure fresh session or existing valid ADK session for this session_id
+            if session_id not in local_sessions:
+                adk_session = await runner.session_service.create_session(
                     app_name=runner.app_name,
                     user_id=user_id
                 )
-                local_sessions[user_id] = session.id
+                local_sessions[session_id] = adk_session.id
             
-            session_id = local_sessions[user_id]
+            adk_session_id = local_sessions[session_id]
+            
+            # Construct content parts: single text prompt + distinct inline data parts for each attached image (up to 5)
+            genai_parts = [genai_types.Part.from_text(text=message or "Please analyze the attached image(s) for my fitness, workout, nutrition, form, equipment, or biometrics guidance.")]
+            for img_bytes, img_mime in decoded_images:
+                genai_parts.append(genai_types.Part.from_bytes(data=img_bytes, mime_type=img_mime))
+
             user_content = genai_types.Content(
                 role="user",
-                parts=[genai_types.Part.from_text(text=message)]
+                parts=genai_parts
             )
 
             accumulated_text = []
             
             async def run_agent():
                 async for event in runner.run_async(
-                    session_id=session_id,
+                    session_id=adk_session_id,
                     user_id=user_id,
                     new_message=user_content
                 ):
@@ -324,8 +438,22 @@ async def chat(req: Request):
     if not parts:
         parts = [{"kind": "text", "text": "(The coach completed the turn without a text response. Try asking another question!)"}]
 
-    print(f"📤 [Chat] Returning {len(parts)} parts to '{user_id}'")
-    return JSONResponse({"parts": parts})
+    # 2. Persist agent reply to Firestore chat_sessions
+    agent_text_combined = "\n\n".join([p["text"] for p in parts if p.get("kind") == "text" or p.get("text")])
+    save_message_to_session(session_id=session_id, role="agent", text=agent_text_combined, user_id=user_id, parts=parts)
+
+    # 3. Retrieve updated session metadata (with auto-generated title and category)
+    session_data = get_chat_session_history(session_id, user_id=user_id) or {}
+    session_title = session_data.get("title", "New Chat")
+    session_category = session_data.get("category", "General")
+
+    print(f"📤 [Chat] Returning {len(parts)} parts to '{user_id}' [Session: {session_id} - '{session_title}' ({session_category})]")
+    return JSONResponse({
+        "parts": parts,
+        "session_id": session_id,
+        "title": session_title,
+        "category": session_category
+    })
 
 
 # Mount static assets
@@ -334,6 +462,6 @@ app.mount("/", StaticFiles(directory=str(static_dir), html=True), name="static")
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.environ.get("PORT", 8000))
-    print(f"🚀 ApexPulse Frontend running at http://localhost:{port}")
+    port = int(os.environ.get("PORT", 8080))
+    print(f"🚀 ApexPulse Frontend running at http://0.0.0.0:{port}")
     uvicorn.run(app, host="0.0.0.0", port=port)
