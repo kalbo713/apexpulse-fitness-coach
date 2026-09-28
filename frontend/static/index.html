@@ -156,16 +156,18 @@
       flex: 1;
       overflow: hidden;
       position: relative;
+      width: 100%;
     }
 
     .chat-sidebar {
       width: 280px;
+      min-width: 280px;
       background: rgba(16, 22, 38, 0.98);
       backdrop-filter: blur(20px);
       border-right: 1px solid var(--card-border);
       display: flex;
       flex-direction: column;
-      transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, transform 0.25s ease;
+      transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, width 0.25s ease;
       z-index: 15;
       flex-shrink: 0;
       overflow: hidden;
@@ -178,6 +180,31 @@
       pointer-events: none;
       border-right: none;
       transform: translateX(-100%);
+    }
+
+    /* Mobile Backdrop Overlay */
+    .sidebar-backdrop {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(3px);
+      z-index: 35;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      cursor: pointer;
+    }
+
+    .sidebar-backdrop.active {
+      display: block;
+      opacity: 1;
+      pointer-events: auto;
     }
 
     .sidebar-top {
@@ -463,6 +490,8 @@
       height: 100%;
       overflow: hidden;
       position: relative;
+      width: 100%;
+      min-width: 0;
     }
 
     /* --- Chat Container --- */
@@ -1477,6 +1506,58 @@
       transform: translateY(-1px);
       box-shadow: 0 6px 16px rgba(255, 87, 34, 0.45);
     }
+
+    /* --- Mobile Responsive Layout (<= 768px) --- */
+    @media (max-width: 768px) {
+      .app-header {
+        padding: 0.65rem 0.85rem;
+      }
+
+      .header-stats {
+        display: none !important;
+      }
+
+      .chat-sidebar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        height: 100%;
+        width: 280px;
+        max-width: 85vw;
+        z-index: 40;
+        box-shadow: 6px 0 28px rgba(0, 0, 0, 0.75);
+        transform: translateX(0);
+        opacity: 1;
+      }
+
+      .chat-sidebar.collapsed {
+        transform: translateX(-100%) !important;
+        width: 280px !important;
+        min-width: 280px !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        box-shadow: none !important;
+      }
+
+      .chat-main {
+        width: 100% !important;
+        flex: 1 !important;
+        min-width: 0 !important;
+      }
+
+      #chat-container {
+        padding: 1rem 0.75rem !important;
+      }
+
+      .input-section {
+        padding: 0.65rem 0.75rem !important;
+      }
+
+      .quick-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1538,6 +1619,9 @@
         <div style="color:var(--text-muted);font-size:0.8rem;padding:0.75rem 0.5rem;text-align:center;">Loading conversations...</div>
       </div>
     </aside>
+
+    <!-- Mobile Backdrop Overlay -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="toggleSidebar()"></div>
 
     <!-- Main Workspace -->
     <main class="chat-main">
@@ -2215,10 +2299,18 @@
 
     function toggleSidebar() {
       const sidebar = document.getElementById("chat-sidebar");
+      const backdrop = document.getElementById("sidebar-backdrop");
       if (sidebar) {
         sidebar.classList.toggle("collapsed");
         const isCollapsed = sidebar.classList.contains("collapsed");
         localStorage.setItem("apex_sidebar_collapsed", isCollapsed ? "true" : "false");
+        if (backdrop) {
+          if (!isCollapsed && window.innerWidth <= 768) {
+            backdrop.classList.add("active");
+          } else {
+            backdrop.classList.remove("active");
+          }
+        }
       }
     }
 
@@ -2386,6 +2478,14 @@
         currentAbortController.abort();
         currentAbortController = null;
       }
+      if (window.innerWidth <= 768) {
+        const sidebar = document.getElementById("chat-sidebar");
+        const backdrop = document.getElementById("sidebar-backdrop");
+        if (sidebar && !sidebar.classList.contains("collapsed")) {
+          sidebar.classList.add("collapsed");
+        }
+        if (backdrop) backdrop.classList.remove("active");
+      }
       try {
         const res = await fetch("/sessions", {
           method: "POST",
@@ -2407,6 +2507,14 @@
       if (currentAbortController) {
         currentAbortController.abort();
         currentAbortController = null;
+      }
+      if (window.innerWidth <= 768) {
+        const sidebar = document.getElementById("chat-sidebar");
+        const backdrop = document.getElementById("sidebar-backdrop");
+        if (sidebar && !sidebar.classList.contains("collapsed")) {
+          sidebar.classList.add("collapsed");
+        }
+        if (backdrop) backdrop.classList.remove("active");
       }
       currentSessionId = sessionId;
       renderSessionsList();
@@ -2689,10 +2797,18 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
+      const isMobile = window.innerWidth <= 768;
       const savedCollapsed = localStorage.getItem("apex_sidebar_collapsed");
-      if (savedCollapsed === "true") {
-        const sidebar = document.getElementById("chat-sidebar");
-        if (sidebar) sidebar.classList.add("collapsed");
+      const sidebar = document.getElementById("chat-sidebar");
+      const backdrop = document.getElementById("sidebar-backdrop");
+      if (sidebar) {
+        // On mobile, default to hidden/collapsed; on desktop, respect saved preference or default open
+        if (isMobile || savedCollapsed === "true") {
+          sidebar.classList.add("collapsed");
+          if (backdrop) backdrop.classList.remove("active");
+        } else {
+          sidebar.classList.remove("collapsed");
+        }
       }
       loadSessionsList();
     });

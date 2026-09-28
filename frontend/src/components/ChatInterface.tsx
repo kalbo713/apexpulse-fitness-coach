@@ -67,14 +67,33 @@ export const ChatInterface: React.FC = () => {
   // Chat Session & Categorized Sidebar State
   const [sessions, setSessions] = useState<ChatSessionMeta[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth <= 768;
+    }
+    return false;
+  });
+
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(() => {
     try {
+      if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+        return false;
+      }
       const saved = localStorage.getItem('apex_sidebar_collapsed');
       return saved !== 'true';
     } catch {
       return true;
     }
   });
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>(() => {
     try {
       return JSON.parse(localStorage.getItem('apex_collapsed_cats') || '{}');
@@ -236,6 +255,9 @@ export const ChatInterface: React.FC = () => {
       abortControllerRef.current = null;
       setIsLoading(false);
     }
+    if (isMobile) {
+      setIsSidebarOpen(false);
+    }
     try {
       const res = await fetch('/sessions', {
         method: 'POST',
@@ -265,6 +287,9 @@ export const ChatInterface: React.FC = () => {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
       setIsLoading(false);
+    }
+    if (isMobile) {
+      setIsSidebarOpen(false);
     }
     setCurrentSessionId(sessionId);
     setIsLoadingSession(true);
@@ -556,22 +581,51 @@ export const ChatInterface: React.FC = () => {
       </header>
 
       {/* Main Layout Container */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
-        {/* Collapsible Left-hand History Sidebar */}
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative', width: '100%' }}>
+        {/* Mobile Backdrop Overlay */}
+        {isMobile && isSidebarOpen && (
+          <div
+            onClick={() => setIsSidebarOpen(false)}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100%',
+              height: '100%',
+              background: 'rgba(0, 0, 0, 0.65)',
+              backdropFilter: 'blur(3px)',
+              zIndex: 35,
+              cursor: 'pointer',
+            }}
+          />
+        )}
+
+        {/* Collapsible Left-hand History Sidebar (Desktop side-by-side, Mobile overlay drawer) */}
         <aside
           style={{
-            width: isSidebarOpen ? 290 : 0,
-            minWidth: isSidebarOpen ? 290 : 0,
+            position: isMobile ? 'absolute' : 'relative',
+            top: 0,
+            left: 0,
+            bottom: 0,
+            height: '100%',
+            width: isMobile ? (isSidebarOpen ? 280 : 0) : (isSidebarOpen ? 290 : 0),
+            minWidth: isMobile ? 0 : (isSidebarOpen ? 290 : 0),
+            maxWidth: isMobile ? '85vw' : undefined,
             opacity: isSidebarOpen ? 1 : 0,
+            transform: isMobile ? (isSidebarOpen ? 'translateX(0)' : 'translateX(-100%)') : undefined,
             background: 'rgba(16, 22, 38, 0.98)',
             backdropFilter: 'blur(20px)',
-            borderRight: isSidebarOpen ? '1px solid rgba(255,255,255,0.08)' : 'none',
+            borderRight: !isMobile && isSidebarOpen ? '1px solid rgba(255,255,255,0.08)' : 'none',
+            boxShadow: isMobile && isSidebarOpen ? '6px 0 28px rgba(0, 0, 0, 0.75)' : 'none',
             display: 'flex',
             flexDirection: 'column',
-            transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease',
-            zIndex: 15,
+            transition: 'transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, width 0.25s ease',
+            zIndex: isMobile ? 40 : 15,
             flexShrink: 0,
             overflow: 'hidden',
+            pointerEvents: isSidebarOpen ? 'auto' : (isMobile ? 'none' : 'none'),
           }}
         >
           {/* Top Actions: New Chat Button */}
@@ -788,9 +842,9 @@ export const ChatInterface: React.FC = () => {
         </aside>
 
         {/* Chat Main Workspace */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', position: 'relative' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', position: 'relative', width: '100%', minWidth: 0 }}>
           {/* Main Chat Scroll Area */}
-          <div ref={chatContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', maxWidth: 900, width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+          <div ref={chatContainerRef} style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '1rem 0.75rem' : '1.5rem', maxWidth: 900, width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
             {/* Quick Actions Grid */}
             <div style={{ background: 'rgba(22, 31, 54, 0.85)', padding: '1.2rem', borderRadius: 14, border: '1px solid rgba(255,255,255,0.08)' }}>
               <h3 style={{ fontSize: '1rem', marginBottom: '0.6rem', color: '#FF8A65' }}>⚡ Quick Coaching Actions</h3>
@@ -1029,7 +1083,7 @@ export const ChatInterface: React.FC = () => {
           </div>
 
           {/* Input Form Bar */}
-          <div style={{ padding: '1rem 1.5rem', background: 'rgba(16, 22, 38, 0.95)', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ padding: isMobile ? '0.75rem 0.85rem' : '1rem 1.5rem', background: 'rgba(16, 22, 38, 0.95)', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
             {/* Quick Prompt Suggestion Buttons */}
             <div style={{ maxWidth: 900, margin: '0 auto 0.65rem auto' }}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center', padding: '0.25rem 0' }}>
