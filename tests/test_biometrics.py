@@ -325,6 +325,22 @@ def test_chat_sessions_and_auto_titling():
     assert cat4 == "General"
     assert cat4 in VALID_CATEGORIES
 
+    # Test initial prompt keywords for Nutrition (fasting, protein, meal, sodium, calories)
+    _, cat_fasting = categorize_and_title_session("How many hours do I have left in my fasting window?")
+    assert cat_fasting == "Nutrition"
+
+    _, cat_protein = categorize_and_title_session("Calculate my daily protein requirements based on 200 lbs.")
+    assert cat_protein == "Nutrition"
+
+    _, cat_meal = categorize_and_title_session("Suggest a high-protein post-workout meal to hit 60g protein.")
+    assert cat_meal == "Nutrition"
+
+    _, cat_sodium = categorize_and_title_session("How much sodium and electrolytes should I consume daily?")
+    assert cat_sodium == "Nutrition"
+
+    _, cat_calories = categorize_and_title_session("What is my target calories and macro split?")
+    assert cat_calories == "Nutrition"
+
     # 2. Test create_chat_session with category
     user_id = "test_user_sidebar"
     sess = create_chat_session(user_id=user_id, title="Initial Chat", category="Workouts")

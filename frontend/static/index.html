@@ -1636,16 +1636,16 @@
           <p>I track your functional strength training, indoor cycling, walking step aggregates (daily, weekly, yearly), 16/8 fasting schedule, and high-protein nutrition with visual A2UI cards.</p>
           
           <div class="quick-grid">
-            <div class="quick-btn" onclick="sendPrompt('Show my daily, weekly, and yearly step tracking summary card via A2UI.')">
+            <div class="quick-btn" onclick="handleQuickPrompt('Show my daily, weekly, and yearly step tracking summary card via A2UI.', 'Workouts')">
               <span>🚶</span> Step Analytics Card
             </div>
-            <div class="quick-btn" onclick="sendPrompt('Show my master biometrics dashboard card with cardiovascular, recovery, sleep, and body composition metrics via A2UI.')">
+            <div class="quick-btn" onclick="handleQuickPrompt('Show my master biometrics dashboard card with cardiovascular, recovery, sleep, and body composition metrics via A2UI.', 'Recovery')">
               <span>❤️</span> Biometrics Summary Card
             </div>
             <div class="quick-btn" onclick="populateLogSteps()">
               <span>👟</span> Log Steps
             </div>
-            <div class="quick-btn" onclick="sendPrompt('Check my fasting window and protein goals based on my current profile.')">
+            <div class="quick-btn" onclick="handleQuickPrompt('Check my fasting window and protein goals based on my current profile.', 'Nutrition')">
               <span>🥩</span> Protein & Fasting Check
             </div>
             <div class="quick-btn" onclick="openWorkoutModal()">
@@ -1654,7 +1654,7 @@
             <div class="quick-btn" onclick="openCyclingModal()">
               <span>🚴</span> Log Cycling Ride
             </div>
-            <div class="quick-btn" onclick="sendPrompt('Show me a summary of all workouts logged today and check my fasting window.')">
+            <div class="quick-btn" onclick="handleQuickPrompt('Show me a summary of all workouts logged today and check my fasting window.', 'Workouts')">
               <span>📊</span> Today's Workout Summary
             </div>
           </div>
@@ -1665,14 +1665,14 @@
       <div class="input-section">
         <div class="input-container">
           <div class="quick-chips-row">
-            <div class="chip" onclick="sendPrompt('Show my daily, weekly, and yearly step tracking summary card via A2UI.')">🚶 Step Analytics Card</div>
-            <div class="chip" onclick="sendPrompt('Show my master biometrics dashboard card with cardiovascular, recovery, sleep, and body composition metrics via A2UI.')">❤️ Biometrics Summary Card</div>
+            <div class="chip" onclick="handleQuickPrompt('Show my daily, weekly, and yearly step tracking summary card via A2UI.', 'Workouts')">🚶 Step Analytics Card</div>
+            <div class="chip" onclick="handleQuickPrompt('Show my master biometrics dashboard card with cardiovascular, recovery, sleep, and body composition metrics via A2UI.', 'Recovery')">❤️ Biometrics Summary Card</div>
             <div class="chip" onclick="openWorkoutModal()">🏋️‍♂️ Log Strength & Mobility</div>
             <div class="chip" onclick="openCyclingModal()">🚴 Log Cycling</div>
             <div class="chip" onclick="populateLogSteps()">👟 Log Steps</div>
-            <div class="chip" onclick="sendPrompt('What is my current fasting status?')">⏱️ Fasting Timer</div>
-            <div class="chip" onclick="sendPrompt('Calculate my protein target for 200 lbs across meals in my 8-hour window.')">🍗 Protein Breakdown</div>
-            <div class="chip" onclick="sendPrompt('Suggest a high-protein post-workout meal to hit 60g protein.')">🥗 Post-Workout Meal</div>
+            <div class="chip" onclick="handleQuickPrompt('What is my current fasting status?', 'Nutrition')">⏱️ Fasting Timer</div>
+            <div class="chip" onclick="handleQuickPrompt('Calculate my protein target for 200 lbs across meals in my 8-hour window.', 'Nutrition')">🍗 Protein Breakdown</div>
+            <div class="chip" onclick="handleQuickPrompt('Suggest a high-protein post-workout meal to hit 60g protein.', 'Nutrition')">🥗 Post-Workout Meal</div>
           </div>
 
           <!-- Dynamic Horizontal Image Gallery Container (Up to 5 images) -->
@@ -1721,7 +1721,18 @@
     const sendBtn = document.getElementById("send-btn");
 
     /* --- Quick Action Helper: Populate Log Steps --- */
-    function populateLogSteps() {
+    async function populateLogSteps() {
+      const targetCat = "Workouts";
+      const activeSession = chatSessions.find(s => s.session_id === currentSessionId);
+      const activeCat = (currentSessionCategory || (activeSession && activeSession.category) || "General").trim();
+      const isSameCategory = activeCat.toLowerCase() === targetCat.toLowerCase();
+
+      if (!isSameCategory && hasMessagesInCurrentSession) {
+        await createNewChat(targetCat);
+      } else if (!hasMessagesInCurrentSession) {
+        currentSessionCategory = targetCat;
+      }
+
       if (userInput) {
         userInput.value = "Log my steps: [Enter Number]";
         userInput.focus();
@@ -1755,7 +1766,7 @@
       }
     }
 
-    function submitCyclingModal(e) {
+    async function submitCyclingModal(e) {
       e.preventDefault();
       const duration = document.getElementById("modal-cycling-duration").value || "45";
       const zone = document.getElementById("modal-cycling-zone").value || "Zone 2 (Aerobic Base)";
@@ -1765,7 +1776,7 @@
       const formattedMessage = `Logged Cycling Ride: ${duration} mins | ${zone} | Avg Power: ${watts} W | Cadence: ${rpm} RPM`;
 
       closeCyclingModal();
-      sendPrompt(formattedMessage);
+      await handleQuickPrompt(formattedMessage, "Workouts");
     }
 
     /* --- Workout Modal Functions --- */
@@ -1839,7 +1850,7 @@
       }
     }
 
-    function submitWorkoutModal(e) {
+    async function submitWorkoutModal(e) {
       e.preventDefault();
       const select = document.getElementById("modal-exercise-select");
       const customInput = document.getElementById("modal-custom-exercise");
@@ -1866,7 +1877,7 @@
       const formattedMessage = `Logged Workout: ${exerciseName} | Equipment: ${selectedEquipment} | Weight: ${weightLbs} lbs | Completed: ${completed} | Sets: ${actualSets}/${targetSets} | Reps: ${actualReps}/${targetReps} | Duration: ${duration} mins | RPE: ${rpe}`;
 
       closeWorkoutModal();
-      sendPrompt(formattedMessage);
+      await handleQuickPrompt(formattedMessage, "Workouts");
     }
 
     function el(tag, cls, text) {
@@ -2295,6 +2306,8 @@
 
     /* --- Session Management State & Functions --- */
     let currentSessionId = null;
+    let currentSessionCategory = "General";
+    let hasMessagesInCurrentSession = false;
     let chatSessions = [];
 
     function toggleSidebar() {
@@ -2447,16 +2460,16 @@
           <p>I track your functional strength training, indoor cycling, walking step aggregates (daily, weekly, yearly), 16/8 fasting schedule, and high-protein nutrition with visual A2UI cards.</p>
           
           <div class="quick-grid">
-            <div class="quick-btn" onclick="sendPrompt('Show my daily, weekly, and yearly step tracking summary card via A2UI.')">
+            <div class="quick-btn" onclick="handleQuickPrompt('Show my daily, weekly, and yearly step tracking summary card via A2UI.', 'Workouts')">
               <span>🚶</span> Step Analytics Card
             </div>
-            <div class="quick-btn" onclick="sendPrompt('Show my master biometrics dashboard card with cardiovascular, recovery, sleep, and body composition metrics via A2UI.')">
+            <div class="quick-btn" onclick="handleQuickPrompt('Show my master biometrics dashboard card with cardiovascular, recovery, sleep, and body composition metrics via A2UI.', 'Recovery')">
               <span>❤️</span> Biometrics Summary Card
             </div>
             <div class="quick-btn" onclick="populateLogSteps()">
               <span>👟</span> Log Steps
             </div>
-            <div class="quick-btn" onclick="sendPrompt('Check my fasting window and protein goals based on my current profile.')">
+            <div class="quick-btn" onclick="handleQuickPrompt('Check my fasting window and protein goals based on my current profile.', 'Nutrition')">
               <span>🥩</span> Protein & Fasting Check
             </div>
             <div class="quick-btn" onclick="openWorkoutModal()">
@@ -2465,7 +2478,7 @@
             <div class="quick-btn" onclick="openCyclingModal()">
               <span>🚴</span> Log Cycling Ride
             </div>
-            <div class="quick-btn" onclick="sendPrompt('Show me a summary of all workouts logged today and check my fasting window.')">
+            <div class="quick-btn" onclick="handleQuickPrompt('Show me a summary of all workouts logged today and check my fasting window.', 'Workouts')">
               <span>📊</span> Today's Workout Summary
             </div>
           </div>
@@ -2473,7 +2486,7 @@
       `;
     }
 
-    async function handleNewChat() {
+    async function createNewChat(category = "General") {
       if (currentAbortController) {
         currentAbortController.abort();
         currentAbortController = null;
@@ -2486,20 +2499,43 @@
         }
         if (backdrop) backdrop.classList.remove("active");
       }
+      const targetCat = category || "General";
       try {
         const res = await fetch("/sessions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: "apex-user", title: "New Chat" })
+          body: JSON.stringify({ user_id: "apex-user", title: "New Chat", category: targetCat })
         });
         const data = await res.json();
         currentSessionId = data.session.session_id;
+        currentSessionCategory = data.session.category || targetCat;
       } catch (err) {
         currentSessionId = "session_" + Date.now();
+        currentSessionCategory = targetCat;
       }
+      hasMessagesInCurrentSession = false;
       renderWelcomeCard();
       renderSessionsList();
       userInput.focus();
+      return currentSessionId;
+    }
+
+    const handleNewChat = (category = "General") => createNewChat(category);
+
+    async function handleQuickPrompt(text, targetCategory) {
+      const targetCat = targetCategory || "General";
+      const activeSession = chatSessions.find(s => s.session_id === currentSessionId);
+      const activeCat = (currentSessionCategory || (activeSession && activeSession.category) || "General").trim();
+      const isSameCategory = activeCat.toLowerCase() === targetCat.toLowerCase();
+
+      // Auto-switching: If active thread belongs to a different category, trigger createNewChat with targetCategory
+      if (!isSameCategory && hasMessagesInCurrentSession) {
+        await createNewChat(targetCat);
+      } else if (!hasMessagesInCurrentSession) {
+        currentSessionCategory = targetCat;
+      }
+
+      await sendPrompt(text);
     }
 
     async function loadSession(sessionId) {
@@ -2517,6 +2553,10 @@
         if (backdrop) backdrop.classList.remove("active");
       }
       currentSessionId = sessionId;
+      const activeSession = chatSessions.find(s => s.session_id === sessionId);
+      if (activeSession) {
+        currentSessionCategory = activeSession.category || "General";
+      }
       renderSessionsList();
       
       chatContainer.innerHTML = `
@@ -2531,9 +2571,13 @@
         if (!res.ok) throw new Error("Failed to load session history");
         const data = await res.json();
         const session = data.session;
+        if (session && session.category) {
+          currentSessionCategory = session.category;
+        }
         
         chatContainer.innerHTML = "";
         const messages = (session && session.messages) || [];
+        hasMessagesInCurrentSession = messages.length > 0;
 
         if (messages.length === 0) {
           renderWelcomeCard();
@@ -2564,7 +2608,7 @@
         await fetch(`/sessions/${sessionId}?user_id=apex-user`, { method: "DELETE" });
         chatSessions = chatSessions.filter(s => s.session_id !== sessionId);
         if (currentSessionId === sessionId) {
-          handleNewChat();
+          createNewChat();
         } else {
           renderSessionsList();
         }
@@ -2728,6 +2772,9 @@
       currentAbortController = new AbortController();
       const controller = currentAbortController;
 
+      // Mark that session now has messages
+      hasMessagesInCurrentSession = true;
+
       // Add user message with actions and image thumbnails if present
       createMsgRow("user", userText, currentImages.map(img => img.base64));
       
@@ -2778,6 +2825,9 @@
 
         if (data.session_id) {
           currentSessionId = data.session_id;
+        }
+        if (data.category) {
+          currentSessionCategory = data.category;
         }
 
         renderReply(agentWrapper, data.parts || []);

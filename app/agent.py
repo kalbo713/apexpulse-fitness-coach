@@ -74,16 +74,17 @@ def categorize_and_title_session(first_prompt: str) -> tuple[str, str]:
     
     # Check Workouts signals
     workout_keywords = [
-        "workout", "strength", "mobility", "kettlebell", "dumbbell", "cycling", "ride",
+        "workout", "workouts", "strength", "mobility", "kettlebell", "dumbbell", "cycling", "ride",
         "pooboo", "bike", "cadence", "watts", "rpm", "squat", "pushup", "deadlift", "reps",
         "sets", "step", "steps", "walking", "walk", "jog", "balance board", "calf stretcher",
         "yoga mat", "exercise", "training", "drill", "drills", "rpe", "volume", "cardio", "gym"
     ]
-    # Check Nutrition signals
+    # Check Nutrition signals (fasting, protein, meal, sodium, calories, etc.)
     nutrition_keywords = [
         "fasting", "fast", "16/8", "protein", "leucine", "macros", "calories", "calorie",
-        "meal", "meals", "eating window", "food", "diet", "nutrition", "carbs", "fats",
-        "amino", "intake", "supplement", "whey", "breakfast", "dinner", "lunch"
+        "meal", "meals", "sodium", "salt", "eating window", "food", "diet", "nutrition",
+        "carbs", "fats", "amino", "intake", "supplement", "whey", "breakfast", "dinner",
+        "lunch", "electrolyte", "electrolytes", "snack", "snacks", "kcal"
     ]
     # Check Recovery signals
     recovery_keywords = [
@@ -94,16 +95,19 @@ def categorize_and_title_session(first_prompt: str) -> tuple[str, str]:
     ]
     
     # Priority & Score matching for Category:
-    if "recovery" in clean_lower or any(k in clean_lower for k in ["sleep score", "resting heart rate", "blood pressure", "omron", "hrv", "body battery", "training readiness", "soreness", "stretch"]):
-        category = "Recovery"
-    elif any(k in clean_lower for k in ["fasting", "16/8", "protein", "leucine", "meal", "eating window", "diet", "calories"]):
+    # 1. Nutrition inspection (fasting, protein, meal, sodium, calories, etc.)
+    if any(k in clean_lower for k in ["fasting", "protein", "meal", "meals", "sodium", "calories", "calorie", "16/8", "leucine", "macros", "diet", "eating window", "food", "nutrition", "carbs", "fats", "supplement", "whey", "breakfast", "dinner", "lunch", "salt", "electrolyte", "electrolytes"]):
         category = "Nutrition"
-    elif any(k in clean_lower for k in ["workout", "kettlebell", "dumbbell", "cycling", "ride", "step", "steps", "mobility", "squat", "sets", "reps", "balance board", "calf stretcher"]):
-        category = "Workouts"
-    elif any(k in clean_lower for k in workout_keywords):
+    # 2. Recovery inspection
+    elif "recovery" in clean_lower or any(k in clean_lower for k in ["sleep score", "resting heart rate", "blood pressure", "omron", "hrv", "heart rate variability", "body battery", "training readiness", "soreness", "stretch", "stretching", "foam roller"]):
+        category = "Recovery"
+    # 3. Workouts inspection
+    elif any(k in clean_lower for k in ["workout", "workouts", "kettlebell", "dumbbell", "cycling", "ride", "step", "steps", "walking", "mobility", "squat", "pushup", "deadlift", "sets", "reps", "balance board", "calf stretcher", "yoga mat", "pooboo", "cadence", "watts", "rpm"]):
         category = "Workouts"
     elif any(k in clean_lower for k in nutrition_keywords):
         category = "Nutrition"
+    elif any(k in clean_lower for k in workout_keywords):
+        category = "Workouts"
     elif any(k in clean_lower for k in recovery_keywords):
         category = "Recovery"
     else:
@@ -128,10 +132,19 @@ def categorize_and_title_session(first_prompt: str) -> tuple[str, str]:
     elif "protein" in clean_lower or "leucine" in clean_lower:
         title = "Protein & Nutrition Targets"
         category = "Nutrition"
+    elif "sodium" in clean_lower or "salt" in clean_lower:
+        title = "Sodium & Electrolyte Targets"
+        category = "Nutrition"
+    elif "meal" in clean_lower or "food" in clean_lower:
+        title = "Meal & Nutrition Plan"
+        category = "Nutrition"
+    elif "calorie" in clean_lower or "calories" in clean_lower:
+        title = "Caloric & Macro Targets"
+        category = "Nutrition"
     elif any(k in clean_lower for k in ["cycling", "pooboo", "watts", "cadence", "ride"]):
         title = "Zone 2 Cycling Ride"
         category = "Workouts"
-    elif any(k in clean_lower for k in ["strength", "kettlebell", "dumbbell", "workout", "squat"]):
+    elif any(k in clean_lower for k in ["strength", "kettlebell", "dumbbell", "squat"]):
         title = "Strength & Mobility Workout"
         category = "Workouts"
     elif any(k in clean_lower for k in ["blood pressure", "omron", "bp", "cardiovascular"]):
@@ -143,6 +156,12 @@ def categorize_and_title_session(first_prompt: str) -> tuple[str, str]:
     elif "sleep" in clean_lower or "hrv" in clean_lower:
         title = "Sleep & HRV Analysis"
         category = "Recovery"
+    elif any(k in clean_lower for k in ["biometrics summary card", "master biometrics", "biometrics dashboard"]):
+        title = "Master Biometrics Dashboard"
+        category = "Recovery"
+    elif "workout" in clean_lower and "summary" in clean_lower:
+        title = "Today's Workout Summary"
+        category = "Workouts"
     elif "guest mode" in clean_lower or "guest" in clean_lower:
         title = "Guest Mode Profile"
         category = "General"

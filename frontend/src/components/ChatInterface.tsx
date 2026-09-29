@@ -67,6 +67,7 @@ export const ChatInterface: React.FC = () => {
   // Chat Session & Categorized Sidebar State
   const [sessions, setSessions] = useState<ChatSessionMeta[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [currentSessionCategory, setCurrentSessionCategory] = useState<string>('General');
   const [isMobile, setIsMobile] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       return window.innerWidth <= 768;
@@ -249,7 +250,7 @@ export const ChatInterface: React.FC = () => {
   };
 
   // Start a New Chat
-  const handleNewChat = async () => {
+  const createNewChat = async (category: string = 'General'): Promise<string> => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
@@ -258,26 +259,65 @@ export const ChatInterface: React.FC = () => {
     if (isMobile) {
       setIsSidebarOpen(false);
     }
+    let newSessionId = `session_${Date.now()}`;
+    const targetCat = category || 'General';
     try {
       const res = await fetch('/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: 'apex-user', title: 'New Chat', category: 'General' }),
+        body: JSON.stringify({ user_id: 'apex-user', title: 'New Chat', category: targetCat }),
       });
       if (res.ok) {
         const data = await res.json();
-        setCurrentSessionId(data.session?.session_id || `session_${Date.now()}`);
+        newSessionId = data.session?.session_id || newSessionId;
+        setCurrentSessionCategory(data.session?.category || targetCat);
       } else {
-        setCurrentSessionId(`session_${Date.now()}`);
+        setCurrentSessionCategory(targetCat);
       }
     } catch (err) {
-      setCurrentSessionId(`session_${Date.now()}`);
+      setCurrentSessionCategory(targetCat);
     }
+    setCurrentSessionId(newSessionId);
     setMessages([DEFAULT_WELCOME_MESSAGE]);
     fetchSessions();
     if (inputRef.current) {
       inputRef.current.focus();
     }
+    return newSessionId;
+  };
+
+  const handleNewChat = () => createNewChat('General');
+
+  // Auto-switching & Category-separated quick prompt execution
+  const handleQuickPrompt = async (promptText: string, targetCategory: string) => {
+    const targetCat = targetCategory || 'General';
+    const activeSession = sessions.find((s) => s.session_id === currentSessionId);
+    const activeCat = (currentSessionCategory || activeSession?.category || 'General').trim();
+    const hasUserMessages = messages.some((m) => m.sender === 'user');
+    const isSameCategory = activeCat.toLowerCase() === targetCat.toLowerCase();
+
+    let sessionIdToUse = currentSessionId;
+    if (!isSameCategory && hasUserMessages) {
+      sessionIdToUse = await createNewChat(targetCat);
+    } else if (!hasUserMessages) {
+      setCurrentSessionCategory(targetCat);
+    }
+
+    await handleSendMessage(promptText, sessionIdToUse || undefined);
+  };
+
+  const populateLogSteps = async () => {
+    const targetCat = 'Workouts';
+    const activeSession = sessions.find((s) => s.session_id === currentSessionId);
+    const activeCat = (currentSessionCategory || activeSession?.category || 'General').trim();
+    const hasUserMessages = messages.some((m) => m.sender === 'user');
+    if (activeCat.toLowerCase() !== 'workouts' && hasUserMessages) {
+      await createNewChat(targetCat);
+    } else if (!hasUserMessages) {
+      setCurrentSessionCategory(targetCat);
+    }
+    setInputText('Log my steps: [Enter Number]');
+    inputRef.current?.focus();
   };
 
   // Load a historical chat session
@@ -292,6 +332,10 @@ export const ChatInterface: React.FC = () => {
       setIsSidebarOpen(false);
     }
     setCurrentSessionId(sessionId);
+    const existing = sessions.find((s) => s.session_id === sessionId);
+    if (existing?.category) {
+      setCurrentSessionCategory(existing.category);
+    }
     setIsLoadingSession(true);
 
     try {
@@ -299,6 +343,9 @@ export const ChatInterface: React.FC = () => {
       if (!res.ok) throw new Error('Failed to load session history');
       const data = await res.json();
       const session = data.session;
+      if (session?.category) {
+        setCurrentSessionCategory(session.category);
+      }
       const msgs = (session && session.messages) || [];
 
       if (msgs.length === 0) {
@@ -337,7 +384,7 @@ export const ChatInterface: React.FC = () => {
       await fetch(`/sessions/${sessionId}?user_id=apex-user`, { method: 'DELETE' });
       setSessions((prev) => prev.filter((s) => s.session_id !== sessionId));
       if (currentSessionId === sessionId) {
-        handleNewChat();
+        createNewChat();
       }
     } catch (err) {
       console.error('Failed to delete session:', err);
@@ -434,7 +481,7 @@ export const ChatInterface: React.FC = () => {
   };
 
   // Send message
-  const handleSendMessage = async (textToSend?: string) => {
+  const handleSendMessage = async (textToSend?: string, overrideSessionId?: string) => {
     const text = (textToSend !== undefined ? textToSend : inputText).trim();
     const currentImages = [...attachedImages];
     if ((!text && currentImages.length === 0) || isLoading) return;
@@ -464,11 +511,13 @@ export const ChatInterface: React.FC = () => {
     abortControllerRef.current = controller;
     const timeoutId = setTimeout(() => controller.abort(), 45000);
 
+    const activeSessionId = overrideSessionId || currentSessionId;
+
     try {
       const payload: any = {
         message: userText,
         user_id: 'apex-user',
-        session_id: currentSessionId,
+        session_id: activeSessionId,
       };
       if (currentImages.length > 0) {
         payload.images = currentImages.map((img) => img.base64);
@@ -487,6 +536,9 @@ export const ChatInterface: React.FC = () => {
       const data = await response.json();
       if (data.session_id && data.session_id !== currentSessionId) {
         setCurrentSessionId(data.session_id);
+      }
+      if (data.category) {
+        setCurrentSessionCategory(data.category);
       }
 
       const parts: MessagePart[] = data.parts || [];
@@ -526,8 +578,12 @@ export const ChatInterface: React.FC = () => {
     }
   };
 
-  const handleWorkoutSubmit = (formattedMessage: string) => {
-    handleSendMessage(formattedMessage);
+  const handleWorkoutSubmit = async (formattedMessage: string) => {
+    await handleQuickPrompt(formattedMessage, 'Workouts');
+  };
+
+  const handleCyclingSubmit = async (formattedMessage: string) => {
+    await handleQuickPrompt(formattedMessage, 'Workouts');
   };
 
   // Group sessions by category
@@ -850,28 +906,28 @@ export const ChatInterface: React.FC = () => {
               <h3 style={{ fontSize: '1rem', marginBottom: '0.6rem', color: '#FF8A65' }}>⚡ Quick Coaching Actions</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.5rem' }}>
                 <button
-                  onClick={() => handleSendMessage('Show my daily, weekly, and yearly step tracking summary card via A2UI.')}
+                  onClick={() => handleQuickPrompt('Show my daily, weekly, and yearly step tracking summary card via A2UI.', 'Workouts')}
                   className="quick-btn"
                   style={{ background: '#161f36', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.6rem', borderRadius: 8, cursor: 'pointer', textAlign: 'left' }}
                 >
                   🚶 Step Analytics Card
                 </button>
                 <button
-                  onClick={() => handleSendMessage('Show my master biometrics dashboard card with cardiovascular, recovery, sleep, and body composition metrics via A2UI.')}
+                  onClick={() => handleQuickPrompt('Show my master biometrics dashboard card with cardiovascular, recovery, sleep, and body composition metrics via A2UI.', 'Recovery')}
                   className="quick-btn"
                   style={{ background: '#161f36', border: '1px solid rgba(255,87,34,0.3)', color: '#fff', padding: '0.6rem', borderRadius: 8, cursor: 'pointer', textAlign: 'left' }}
                 >
                   ❤️ Biometrics Summary Card
                 </button>
                 <button
-                  onClick={() => handleEdit('Log my steps: [Enter Number]')}
+                  onClick={populateLogSteps}
                   className="quick-btn"
                   style={{ background: '#161f36', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.6rem', borderRadius: 8, cursor: 'pointer', textAlign: 'left' }}
                 >
                   👟 Log Steps
                 </button>
                 <button
-                  onClick={() => handleSendMessage('Check my fasting window and protein goals based on my current profile.')}
+                  onClick={() => handleQuickPrompt('Check my fasting window and protein goals based on my current profile.', 'Nutrition')}
                   className="quick-btn"
                   style={{ background: '#161f36', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.6rem', borderRadius: 8, cursor: 'pointer', textAlign: 'left' }}
                 >
@@ -892,7 +948,7 @@ export const ChatInterface: React.FC = () => {
                   🚴 Log Cycling Ride
                 </button>
                 <button
-                  onClick={() => handleSendMessage("Show me a summary of all workouts logged today and check my fasting window.")}
+                  onClick={() => handleQuickPrompt("Show me a summary of all workouts logged today and check my fasting window.", 'Workouts')}
                   className="quick-btn"
                   style={{ background: '#161f36', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.6rem', borderRadius: 8, cursor: 'pointer', textAlign: 'left' }}
                 >
@@ -1089,14 +1145,14 @@ export const ChatInterface: React.FC = () => {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center', padding: '0.25rem 0' }}>
                 <button
                   type="button"
-                  onClick={() => handleSendMessage('Show my daily, weekly, and yearly step tracking summary card via A2UI.')}
+                  onClick={() => handleQuickPrompt('Show my daily, weekly, and yearly step tracking summary card via A2UI.', 'Workouts')}
                   style={{ background: '#161f36', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: '0.35rem 0.8rem', fontSize: '0.78rem', fontWeight: 500, color: '#94A3B8', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', transition: 'all 0.18s ease' }}
                 >
                   🚶 Step Analytics Card
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleSendMessage('Show my master biometrics dashboard card with cardiovascular, recovery, sleep, and body composition metrics via A2UI.')}
+                  onClick={() => handleQuickPrompt('Show my master biometrics dashboard card with cardiovascular, recovery, sleep, and body composition metrics via A2UI.', 'Recovery')}
                   style={{ background: '#161f36', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: '0.35rem 0.8rem', fontSize: '0.78rem', fontWeight: 500, color: '#94A3B8', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', transition: 'all 0.18s ease' }}
                 >
                   ❤️ Biometrics Summary Card
@@ -1117,28 +1173,28 @@ export const ChatInterface: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setInputText('Log my steps: '); inputRef.current?.focus(); }}
+                  onClick={populateLogSteps}
                   style={{ background: '#161f36', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: '0.35rem 0.8rem', fontSize: '0.78rem', fontWeight: 500, color: '#94A3B8', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', transition: 'all 0.18s ease' }}
                 >
                   👟 Log Steps
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleSendMessage('What is my current fasting status?')}
+                  onClick={() => handleQuickPrompt('What is my current fasting status?', 'Nutrition')}
                   style={{ background: '#161f36', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: '0.35rem 0.8rem', fontSize: '0.78rem', fontWeight: 500, color: '#94A3B8', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', transition: 'all 0.18s ease' }}
                 >
                   ⏱️ Fasting Timer
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleSendMessage('Calculate my protein target for 200 lbs across meals in my 8-hour window.')}
+                  onClick={() => handleQuickPrompt('Calculate my protein target for 200 lbs across meals in my 8-hour window.', 'Nutrition')}
                   style={{ background: '#161f36', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: '0.35rem 0.8rem', fontSize: '0.78rem', fontWeight: 500, color: '#94A3B8', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', transition: 'all 0.18s ease' }}
                 >
                   🍗 Protein Breakdown
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleSendMessage('Suggest a high-protein post-workout meal to hit 60g protein.')}
+                  onClick={() => handleQuickPrompt('Suggest a high-protein post-workout meal to hit 60g protein.', 'Nutrition')}
                   style={{ background: '#161f36', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: '0.35rem 0.8rem', fontSize: '0.78rem', fontWeight: 500, color: '#94A3B8', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', transition: 'all 0.18s ease' }}
                 >
                   🥗 Post-Workout Meal
@@ -1311,7 +1367,7 @@ export const ChatInterface: React.FC = () => {
       <CyclingModal
         isOpen={isCyclingModalOpen}
         onClose={() => setIsCyclingModalOpen(false)}
-        onSubmit={(formattedMessage) => handleSendMessage(formattedMessage)}
+        onSubmit={handleCyclingSubmit}
       />
     </div>
   );
